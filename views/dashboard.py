@@ -72,7 +72,10 @@ def render_dashboard():
     st.divider()
 
     # --- FILTROS E GRÁFICOS AVANÇADOS ---
-    st.subheader("📊 Central de Análises")
+    # --- FILTROS E GRÁFICOS AVANÇADOS ---
+    col_tit, col_pop = st.columns([3, 1])
+    with col_tit:
+        st.subheader("📊 Central de Análises")
 
     ano_atual = date.today().year
     mes_atual = date.today().month
@@ -102,7 +105,7 @@ def render_dashboard():
         col2.metric(f"Despesas ({mes_selecionado_txt})", f"R$ {despesas_mes:.2f}")
         col3.metric(f"Investimentos ({mes_selecionado_txt})", f"R$ {invest_mes:.2f}")
 
-        # --- MENU DE PERSONALIZAÇÃO ---
+        # --- MENU DE PERSONALIZAÇÃO OCULTO ---
         opcoes_graficos = [
             "1. Evolução Diária (Linhas)",
             "2. Despesas por Categoria (Barras)",
@@ -112,108 +115,118 @@ def render_dashboard():
             "6. Evolução Anual (Barras Empilhadas)"
         ]
 
-        with st.expander("⚙️ Personalizar Visões do Dashboard", expanded=True):
-            graficos_selecionados = st.multiselect(
-                "Escolha quais gráficos deseja visualizar hoje:",
-                opcoes_graficos,
-                default=["2. Despesas por Categoria (Barras)", "4. Cascata de Saldo (Waterfall)"]
-            )
+        with col_pop:
+            st.write("")  # Alinhamento
+            with st.popover("⚙️ Escolher Gráficos", use_container_width=True):
+                graficos_selecionados = st.multiselect(
+                    "Visões ativas:",
+                    opcoes_graficos,
+                    default=["2. Despesas por Categoria (Barras)", "4. Cascata de Saldo (Waterfall)"],
+                    label_visibility="collapsed"
+                )
 
         st.write("---")
         df_despesas = df_mes[df_mes['tipo'].isin(['Débito/Pix', 'Crédito', 'VR'])]
 
         if not df_despesas.empty:
+            # CRIANDO O GRID DE GRÁFICOS (2 Colunas)
+            col_g1, col_g2 = st.columns(2)
+            cols_grid = [col_g1, col_g2]
+            idx_grid = 0
 
             # 1. EVOLUÇÃO DIÁRIA
             if "1. Evolução Diária (Linhas)" in graficos_selecionados:
-                st.write("### 📈 Evolução Diária de Gastos")
-                gastos_por_dia = df_despesas.groupby(df_despesas['data'].dt.day)['valor'].sum().reset_index()
-                fig_linha = px.line(gastos_por_dia, x='data', y='valor', markers=True,
-                                    labels={'data': 'Dia do Mês', 'valor': 'Gasto (R$)'})
-                fig_linha.update_layout(xaxis=dict(tickmode='linear', dtick=1))
-                st.plotly_chart(fig_linha, use_container_width=True)
+                with cols_grid[idx_grid % 2]:
+                    st.markdown("**📈 Evolução Diária de Gastos**")
+                    gastos_por_dia = df_despesas.groupby(df_despesas['data'].dt.day)['valor'].sum().reset_index()
+                    fig_linha = px.line(gastos_por_dia, x='data', y='valor', markers=True)
+                    # Comprimindo margens para não gastar espaço de tela
+                    fig_linha.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=20), xaxis_title=None,
+                                            yaxis_title=None, xaxis=dict(tickmode='linear', dtick=1))
+                    st.plotly_chart(fig_linha, use_container_width=True)
+                idx_grid += 1
 
             # 2. DESPESAS POR CATEGORIA
             if "2. Despesas por Categoria (Barras)" in graficos_selecionados:
-                st.write("### 📊 Despesas por Categoria")
-                gastos_cat = df_despesas.groupby('categoria')['valor'].sum().reset_index().sort_values('valor',
-                                                                                                       ascending=True)
-                fig_bar = px.bar(gastos_cat, x='valor', y='categoria', orientation='h', text_auto='.2f',
-                                 color='categoria')
-                fig_bar.update_layout(showlegend=False, xaxis_title="Total Gasto (R$)", yaxis_title="Categoria")
-                st.plotly_chart(fig_bar, use_container_width=True)
-
-                cat_sel = st.selectbox("Explorar Categoria no Extrato:", df_despesas['categoria'].unique(),
-                                       key="sel_exp_cat")
-                st.button("Filtrar no Extrato", key="btn_explorar_cat", on_click=ir_para_extrato,
-                          args=({'ano': ano_selecionado, 'mes': mes_selecionado_txt, 'categoria': cat_sel},))
+                with cols_grid[idx_grid % 2]:
+                    st.markdown("**📊 Despesas por Categoria**")
+                    gastos_cat = df_despesas.groupby('categoria')['valor'].sum().reset_index().sort_values('valor',
+                                                                                                           ascending=True)
+                    fig_bar = px.bar(gastos_cat, x='valor', y='categoria', orientation='h', text_auto='.2f',
+                                     color='categoria')
+                    fig_bar.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=20), showlegend=False,
+                                          xaxis_title=None, yaxis_title=None)
+                    st.plotly_chart(fig_bar, use_container_width=True)
+                idx_grid += 1
 
             # 3. DIAGRAMA DE SANKEY (FLUXO)
             if "3. O Caminho do Dinheiro (Sankey)" in graficos_selecionados:
-                st.write("### 🔀 O Caminho do Dinheiro")
+                with cols_grid[idx_grid % 2]:
+                    st.markdown("**🔀 O Caminho do Dinheiro**")
+                    fluxo = df_despesas.groupby(['conta', 'categoria'])['valor'].sum().reset_index()
+                    todos_nos = list(pd.concat([fluxo['conta'], fluxo['categoria']]).unique())
+                    dict_nos = {nome: i for i, nome in enumerate(todos_nos)}
+                    source = fluxo['conta'].map(dict_nos).tolist()
+                    target = fluxo['categoria'].map(dict_nos).tolist()
+                    value = fluxo['valor'].tolist()
 
-                # Agrupando dados: Conta -> Categoria
-                fluxo = df_despesas.groupby(['conta', 'categoria'])['valor'].sum().reset_index()
-
-                todos_nos = list(pd.concat([fluxo['conta'], fluxo['categoria']]).unique())
-                dict_nos = {nome: i for i, nome in enumerate(todos_nos)}
-
-                source = fluxo['conta'].map(dict_nos).tolist()
-                target = fluxo['categoria'].map(dict_nos).tolist()
-                value = fluxo['valor'].tolist()
-
-                fig_sankey = go.Figure(data=[go.Sankey(
-                    node=dict(pad=15, thickness=20, line=dict(color="black", width=0.5), label=todos_nos),
-                    link=dict(source=source, target=target, value=value)
-                )])
-                st.plotly_chart(fig_sankey, use_container_width=True)
+                    fig_sankey = go.Figure(data=[go.Sankey(
+                        node=dict(pad=15, thickness=20, line=dict(color="black", width=0.5), label=todos_nos),
+                        link=dict(source=source, target=target, value=value)
+                    )])
+                    fig_sankey.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=20))
+                    st.plotly_chart(fig_sankey, use_container_width=True)
+                idx_grid += 1
 
             # 4. CASCATA DE SALDO (WATERFALL)
             if "4. Cascata de Saldo (Waterfall)" in graficos_selecionados:
-                st.write("### 🌊 Formação do Saldo Mensal")
-
-                fig_water = go.Figure(go.Waterfall(
-                    orientation="v",
-                    measure=["relative", "relative", "relative", "total"],
-                    x=["Entradas", "Despesas", "Investimentos", "Saldo do Mês"],
-                    textposition="outside",
-                    text=[f"+R$ {entradas_mes:.0f}", f"-R$ {despesas_mes:.0f}", f"-R$ {invest_mes:.0f}",
-                          f"R$ {(entradas_mes - despesas_mes - invest_mes):.0f}"],
-                    y=[entradas_mes, -despesas_mes, -invest_mes, (entradas_mes - despesas_mes - invest_mes)],
-                    connector={"line": {"color": "rgb(63, 63, 63)"}},
-                ))
-                fig_water.update_layout(waterfallgap=0.3)
-                st.plotly_chart(fig_water, use_container_width=True)
+                with cols_grid[idx_grid % 2]:
+                    st.markdown("**🌊 Formação do Saldo Mensal**")
+                    fig_water = go.Figure(go.Waterfall(
+                        orientation="v", measure=["relative", "relative", "relative", "total"],
+                        x=["Entradas", "Despesas", "Investimentos", "Saldo do Mês"],
+                        textposition="outside",
+                        text=[f"+R$ {entradas_mes:.0f}", f"-R$ {despesas_mes:.0f}", f"-R$ {invest_mes:.0f}",
+                              f"R$ {(entradas_mes - despesas_mes - invest_mes):.0f}"],
+                        y=[entradas_mes, -despesas_mes, -invest_mes, (entradas_mes - despesas_mes - invest_mes)],
+                        connector={"line": {"color": "rgb(63, 63, 63)"}},
+                    ))
+                    fig_water.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=20), waterfallgap=0.3)
+                    st.plotly_chart(fig_water, use_container_width=True)
+                idx_grid += 1
 
             # 5. RADAR DE PERFIL
             if "5. Radar de Perfil de Consumo" in graficos_selecionados:
-                st.write("### 🕸️ Perfil de Consumo")
-                gastos_radar = df_despesas.groupby('categoria')['valor'].sum().reset_index()
-
-                if len(gastos_radar) > 2:  # O Radar precisa de pelo menos 3 pontas para ficar bom
-                    fig_radar = px.line_polar(gastos_radar, r='valor', theta='categoria', line_close=True, markers=True)
-                    fig_radar.update_traces(fill='toself')
-                    st.plotly_chart(fig_radar, use_container_width=True)
-                else:
-                    st.info("Registre gastos em pelo menos 3 categorias diferentes para formar o gráfico de Radar.")
+                with cols_grid[idx_grid % 2]:
+                    st.markdown("**🕸️ Perfil de Consumo**")
+                    gastos_radar = df_despesas.groupby('categoria')['valor'].sum().reset_index()
+                    if len(gastos_radar) > 2:
+                        fig_radar = px.line_polar(gastos_radar, r='valor', theta='categoria', line_close=True,
+                                                  markers=True)
+                        fig_radar.update_traces(fill='toself')
+                        fig_radar.update_layout(height=320, margin=dict(l=30, r=30, t=30, b=30))
+                        st.plotly_chart(fig_radar, use_container_width=True)
+                    else:
+                        st.info("Registre gastos em pelo menos 3 categorias.")
+                idx_grid += 1
 
             # 6. EVOLUÇÃO ANUAL (BARRAS EMPILHADAS)
             if "6. Evolução Anual (Barras Empilhadas)" in graficos_selecionados:
-                st.write(f"### 📅 Evolução de Despesas no Ano de {ano_selecionado}")
-
-                df_ano = df_graficos[(df_graficos['data'].dt.year == ano_selecionado) & (
-                    df_graficos['tipo'].isin(['Débito/Pix', 'Crédito', 'VR']))].copy()
-                if not df_ano.empty:
-                    df_ano['mes'] = df_ano['data'].dt.month.map(MESES_PT)
-
-                    # Garantir a ordem correta dos meses no eixo X
-                    ordem_meses = list(MESES_PT.values())
-                    fig_empilhada = px.bar(df_ano, x='mes', y='valor', color='categoria',
-                                           category_orders={"mes": ordem_meses})
-                    fig_empilhada.update_layout(xaxis_title="Mês", yaxis_title="Valor Gasto (R$)")
-                    st.plotly_chart(fig_empilhada, use_container_width=True)
-                else:
-                    st.info(f"Nenhum dado registrado para o ano de {ano_selecionado}.")
+                with cols_grid[idx_grid % 2]:
+                    st.markdown(f"**📅 Evolução de Despesas em {ano_selecionado}**")
+                    df_ano = df_graficos[(df_graficos['data'].dt.year == ano_selecionado) & (
+                        df_graficos['tipo'].isin(['Débito/Pix', 'Crédito', 'VR']))].copy()
+                    if not df_ano.empty:
+                        df_ano['mes'] = df_ano['data'].dt.month.map(MESES_PT)
+                        ordem_meses = list(MESES_PT.values())
+                        fig_empilhada = px.bar(df_ano, x='mes', y='valor', color='categoria',
+                                               category_orders={"mes": ordem_meses})
+                        fig_empilhada.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=20), xaxis_title=None,
+                                                    yaxis_title=None)
+                        st.plotly_chart(fig_empilhada, use_container_width=True)
+                    else:
+                        st.info("Nenhum dado para este ano.")
+                idx_grid += 1
 
         else:
             st.info(f"Nenhuma despesa registrada para {mes_selecionado_txt} de {ano_selecionado}.")

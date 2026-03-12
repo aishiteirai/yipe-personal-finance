@@ -21,6 +21,15 @@ st.markdown("""
         footer {visibility: hidden;}
         .stButton>button {border-radius: 8px; font-weight: bold; transition: all 0.3s ease 0s;}
         .stButton>button:hover {transform: translateY(-2px); box-shadow: 0px 5px 10px rgba(0,0,0,0.2);}
+
+        /* MÁGICA DOS CARDS: Estiliza as métricas (numeros grandes) */
+        div[data-testid="stMetric"] {
+            background-color: #131A26;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid #1E2738;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+        }
     </style>
 """, unsafe_allow_html=True)
 
