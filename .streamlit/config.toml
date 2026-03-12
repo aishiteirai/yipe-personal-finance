@@ -1,0 +1,15 @@
+[theme]
+# A cor principal (Usada em botões de destaque, gráficos e sliders)
+primaryColor = "#6C63FF"
+
+# A cor de fundo da tela principal
+backgroundColor = "#0E1117"
+
+# A cor de fundo do menu lateral e dos painéis (cards)
+secondaryBackgroundColor = "#1E2130"
+
+# A cor do texto
+textColor = "#FAFAFA"
+
+# A fonte do aplicativo (opções: "sans serif", "serif", "monospace")
+font = "sans serif"
