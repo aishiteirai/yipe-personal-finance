@@ -19,33 +19,34 @@ def render_extrato():
 
         filtros_salvos = st.session_state.get('filtro_extrato', {})
 
-        st.write("### Filtros de Busca")
-        cf1, cf2, cf3, cf4, cf5 = st.columns(5)
+        # Envolvemos tudo dentro de um expander (a setinha do SAP!)
+        with st.expander("🔍 Filtros e Busca de Lançamentos", expanded=True):
+            cf1, cf2, cf3, cf4, cf5 = st.columns(5)
 
-        anos = ["Todos"] + sorted(df_ext['data_dt'].dt.year.unique().tolist(), reverse=True)
-        idx_ano = anos.index(filtros_salvos.get('ano')) if filtros_salvos.get('ano') in anos else 0
-        f_ano = cf1.selectbox("Ano", anos, index=idx_ano)
+            anos = ["Todos"] + sorted(df_ext['data_dt'].dt.year.unique().tolist(), reverse=True)
+            idx_ano = anos.index(filtros_salvos.get('ano')) if filtros_salvos.get('ano') in anos else 0
+            f_ano = cf1.selectbox("Ano", anos, index=idx_ano)
 
-        meses_nomes = ["Todos"] + list(MESES_PT.values())
-        idx_mes = meses_nomes.index(filtros_salvos.get('mes')) if filtros_salvos.get('mes') in meses_nomes else 0
-        f_mes = cf2.selectbox("Mês", meses_nomes, index=idx_mes)
+            meses_nomes = ["Todos"] + list(MESES_PT.values())
+            idx_mes = meses_nomes.index(filtros_salvos.get('mes')) if filtros_salvos.get('mes') in meses_nomes else 0
+            f_mes = cf2.selectbox("Mês", meses_nomes, index=idx_mes)
 
-        dias = ["Todos"] + sorted(df_ext['data_dt'].dt.day.unique().tolist())
-        idx_dia = dias.index(filtros_salvos.get('dia')) if filtros_salvos.get('dia') in dias else 0
-        f_dia = cf3.selectbox("Dia", dias, index=idx_dia)
+            dias = ["Todos"] + sorted(df_ext['data_dt'].dt.day.unique().tolist())
+            idx_dia = dias.index(filtros_salvos.get('dia')) if filtros_salvos.get('dia') in dias else 0
+            f_dia = cf3.selectbox("Dia", dias, index=idx_dia)
 
-        tipos = ["Todos"] + sorted(df_ext['tipo'].unique().tolist())
-        idx_tipo = tipos.index(filtros_salvos.get('tipo')) if filtros_salvos.get('tipo') in tipos else 0
-        f_tipo = cf4.selectbox("Tipo", tipos, index=idx_tipo)
+            tipos = ["Todos"] + sorted(df_ext['tipo'].unique().tolist())
+            idx_tipo = tipos.index(filtros_salvos.get('tipo')) if filtros_salvos.get('tipo') in tipos else 0
+            f_tipo = cf4.selectbox("Tipo", tipos, index=idx_tipo)
 
-        categorias_lista = ["Todas"] + sorted(df_ext['categoria'].unique().tolist())
-        idx_cat = categorias_lista.index(filtros_salvos.get('categoria')) if filtros_salvos.get(
-            'categoria') in categorias_lista else 0
-        f_cat = cf5.selectbox("Categoria", categorias_lista, index=idx_cat)
+            categorias_lista = ["Todas"] + sorted(df_ext['categoria'].unique().tolist())
+            idx_cat = categorias_lista.index(filtros_salvos.get('categoria')) if filtros_salvos.get(
+                'categoria') in categorias_lista else 0
+            f_cat = cf5.selectbox("Categoria", categorias_lista, index=idx_cat)
 
-        if st.button("🔄 Limpar Filtros Rápido"):
-            st.session_state['filtro_extrato'] = {}
-            st.rerun()
+            if st.button("🔄 Limpar Filtros Rápido", use_container_width=True):
+                st.session_state['filtro_extrato'] = {}
+                st.rerun()
 
         mask = pd.Series(True, index=df_ext.index)
         if f_ano != "Todos": mask &= (df_ext['data_dt'].dt.year == f_ano)
