@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<body>
+<div layout:fragment="content">
+    <h1>Faturas de Cartão de Crédito</h1>
+
+    <div th:if="${noData}" class="alert alert-info">
+        Nenhum lançamento de Crédito encontrado.
+    </div>
+
+    <div th:if="${!noData}">
+        <!-- Card + Period Selectors -->
+        <form th:action="@{/invoices}" method="get" class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Selecione o Cartão</label>
+                <select name="cartao" class="form-select" onchange="this.form.submit()">
+                    <option th:each="c : ${cartoes}" th:value="${c.nome}"
+                            th:text="${c.nome}"
+                            th:selected="${c.nome == selectedCard}"></option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Referência da Fatura (Ano-Mês)</label>
+                <select name="mesAno" class="form-select" onchange="this.form.submit()">
+                    <option th:each="p : ${periods}" th:value="${p}"
+                            th:text="${p}"
+                            th:selected="${p == selectedPeriod}"></option>
+                </select>
+            </div>
+        </form>
+
+        <div th:if="${invoice != null}">
+            <!-- Invoice Summary -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="metric-card">
+                        <h6>Total da Fatura</h6>
+                        <h3 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(invoice.total, 0, 'COMMA', 2, 'POINT')}"></span></h3>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-card">
+                        <h6>Vencimento estimado</h6>
+                        <h5 class="mb-0" th:text="${invoice.diaVencimento + ' de ' + invoice.nomeMes + ' de ' + invoice.ano}"></h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div th:if="${not #lists.isEmpty(invoice.transactions)}">
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Parcela</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${invoice.transactions}">
+                                <td th:text="${t.data}"></td>
+                                <td th:text="${t.descricao}"></td>
+                                <td th:text="${t.categoria}"></td>
+                                <td>R$ <span th:text="${#numbers.formatDecimal(t.valor, 0, 'COMMA', 2, 'POINT')}"></span></td>
+                                <td th:text="${t.parcela}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(invoice.transactions)}" class="alert alert-success">
+                Sua fatura está zerada neste mês. 🎉
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

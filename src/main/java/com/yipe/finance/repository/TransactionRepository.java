@@ -39,6 +39,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("tipo") TransactionType tipo,
             @Param("categoria") String categoria);
 
+    @Query("SELECT t FROM Transaction t WHERE t.tipo IN :tipos")
+    List<Transaction> findByTipoIn(@Param("tipos") List<TransactionType> tipos);
+
     @Query("SELECT t FROM Transaction t WHERE t.data = :date")
     List<Transaction> findByData(@Param("date") LocalDate date);
 
