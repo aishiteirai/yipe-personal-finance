@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test_yipe
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
