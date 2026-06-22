@@ -17,6 +17,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT COALESCE(SUM(t.valor), 0) FROM Transaction t WHERE t.tipo IN :tipos")
     BigDecimal sumByTipoIn(@Param("tipos") List<TransactionType> tipos);
 
+    @Query("SELECT COALESCE(SUM(t.valor), 0) FROM Transaction t WHERE t.tipo IN :tipos AND YEAR(t.data) = :year AND MONTH(t.data) = :month")
+    BigDecimal sumByTipoInAndMonth(@Param("tipos") List<TransactionType> tipos,
+                                   @Param("year") int year, @Param("month") int month);
+
+    @Query("SELECT t FROM Transaction t WHERE YEAR(t.data) = :year AND MONTH(t.data) = :month AND t.tipo NOT IN :exclude ORDER BY t.data")
+    List<Transaction> findByYearAndMonthExcluding(@Param("year") int year, @Param("month") int month,
+                                                   @Param("exclude") List<TransactionType> exclude);
+
     @Query("SELECT t FROM Transaction t WHERE "
          + "(:year IS NULL OR YEAR(t.data) = :year) AND "
          + "(:month IS NULL OR MONTH(t.data) = :month) AND "
@@ -30,6 +38,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("day") Integer day,
             @Param("tipo") TransactionType tipo,
             @Param("categoria") String categoria);
+
+    @Query("SELECT t FROM Transaction t WHERE t.data = :date")
+    List<Transaction> findByData(@Param("date") LocalDate date);
 
     @Query("SELECT t FROM Transaction t WHERE t.conta = :conta AND t.tipo = :tipo ORDER BY t.data")
     List<Transaction> findByContaAndTipo(@Param("conta") String conta, @Param("tipo") TransactionType tipo);
