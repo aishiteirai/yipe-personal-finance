@@ -11,28 +11,26 @@
 </head>
 <body>
     <div class="d-flex" id="wrapper">
-        <!-- Sidebar -->
         <div class="sidebar" id="sidebar-wrapper">
             <div class="sidebar-heading">⚡ YIPE</div>
             <div class="list-group list-group-flush">
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/dashboard')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'dashboard'} ? 'active' : ''"
                    th:href="@{/dashboard}" class="list-group-item list-group-item-action">📊 Dashboard</a>
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/transactions')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'transactions'} ? 'active' : ''"
                    th:href="@{/transactions}" class="list-group-item list-group-item-action">💸 Lançamentos</a>
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/statement')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'statement'} ? 'active' : ''"
                    th:href="@{/statement}" class="list-group-item list-group-item-action">📜 Extrato</a>
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/invoices')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'invoices'} ? 'active' : ''"
                    th:href="@{/invoices}" class="list-group-item list-group-item-action">💳 Faturas</a>
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/budget')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'budget'} ? 'active' : ''"
                    th:href="@{/budget}" class="list-group-item list-group-item-action">🎯 Planejamento</a>
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/settings')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'settings'} ? 'active' : ''"
                    th:href="@{/settings}" class="list-group-item list-group-item-action">⚙️ Configurações</a>
-                <a th:classappend="${#httpServletRequest.requestURI.startsWith('/import-export')} ? 'active' : ''"
+                <a th:classappend="${activePage == 'import-export'} ? 'active' : ''"
                    th:href="@{/import-export}" class="list-group-item list-group-item-action">📁 Importar/Exportar</a>
             </div>
         </div>
 
-        <!-- Page Content -->
         <div id="page-content-wrapper">
             <div class="container-fluid p-4">
                 <th:block layout:fragment="content">
