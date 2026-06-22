@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<body>
+<div layout:fragment="content">
+    <h1>Extrato e Gerenciamento</h1>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <a class="btn btn-link text-decoration-none" data-bs-toggle="collapse" href="#filtrosCollapse">
+                🔍 Filtros e Busca de Lançamentos
+            </a>
+        </div>
+        <div class="collapse show" id="filtrosCollapse">
+            <div class="card-body">
+                <form th:action="@{/statement}" method="get" class="row g-3 align-items-end">
+                    <div class="col">
+                        <label class="form-label">Ano</label>
+                        <select name="ano" class="form-select">
+                            <option value="">Todos</option>
+                            <option th:each="y : ${availableYears}" th:value="${y}"
+                                    th:selected="${filtroAno == y}" th:text="${y}"></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Mês</label>
+                        <select name="mes" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="1" th:selected="${filtroMes == 1}">Janeiro</option>
+                            <option value="2" th:selected="${filtroMes == 2}">Fevereiro</option>
+                            <option value="3" th:selected="${filtroMes == 3}">Março</option>
+                            <option value="4" th:selected="${filtroMes == 4}">Abril</option>
+                            <option value="5" th:selected="${filtroMes == 5}">Maio</option>
+                            <option value="6" th:selected="${filtroMes == 6}">Junho</option>
+                            <option value="7" th:selected="${filtroMes == 7}">Julho</option>
+                            <option value="8" th:selected="${filtroMes == 8}">Agosto</option>
+                            <option value="9" th:selected="${filtroMes == 9}">Setembro</option>
+                            <option value="10" th:selected="${filtroMes == 10}">Outubro</option>
+                            <option value="11" th:selected="${filtroMes == 11}">Novembro</option>
+                            <option value="12" th:selected="${filtroMes == 12}">Dezembro</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Dia</label>
+                        <select name="dia" class="form-select">
+                            <option value="">Todos</option>
+                            <option th:each="d : ${#numbers.sequence(1, 31)}" th:value="${d}"
+                                    th:selected="${filtroDia == d}" th:text="${d}"></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Tipo</label>
+                        <select name="tipo" class="form-select">
+                            <option value="">Todos</option>
+                            <option th:each="t : ${allTipos}" th:value="${t}"
+                                    th:selected="${filtroTipo == t}" th:text="${t.displayName}"></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Categoria</label>
+                        <select name="categoria" class="form-select">
+                            <option value="">Todas</option>
+                            <option th:each="cat : ${allCategorias}" th:value="${cat.nome}"
+                                    th:selected="${filtroCategoria == cat.nome}" th:text="${cat.nome}"></option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                        <a th:href="@{/statement}" class="btn btn-secondary">Limpar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <h3 th:if="${transactions}">
+        📜 Tabela Filtrada (<span th:text="${#lists.size(transactions)}"></span> registros)
+    </h3>
+    <div class="table-responsive mb-4" th:if="${not #lists.isEmpty(transactions)}">
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Data</th><th>Tipo</th><th>Descrição</th>
+                    <th>Categoria</th><th>Conta</th><th>Valor</th><th>Parcela</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="t : ${transactions}">
+                    <td th:text="${t.id}"></td>
+                    <td th:text="${t.data}"></td>
+                    <td th:text="${t.tipo.displayName}"></td>
+                    <td th:text="${t.descricao}"></td>
+                    <td th:text="${t.categoria}"></td>
+                    <td th:text="${t.conta}"></td>
+                    <td>R$ <span th:text="${#numbers.formatDecimal(t.valor, 0, 'COMMA', 2, 'POINT')}"></span></td>
+                    <td th:text="${t.parcela}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p th:if="${#lists.isEmpty(transactions)}" class="text-muted">Nenhum dado registrado.</p>
+
+    <!-- Tools Tabs -->
+    <div th:if="${not #lists.isEmpty(transactions)}">
+        <h3>🛠️ Ferramentas de Gerenciamento</h3>
+        <ul class="nav nav-tabs" id="toolsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button">✏️ Editar Único</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bulk-tab" data-bs-toggle="tab" data-bs-target="#bulk" type="button">🔄 Edição em Massa</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="parc-tab" data-bs-toggle="tab" data-bs-target="#parc" type="button">🗓️ Reestruturar Parcelas</button>
+            </li>
+        </ul>
+
+        <div class="tab-content p-3 border border-top-0 rounded-bottom mb-4">
+            <!-- Tab 1: Edit Single -->
+            <div class="tab-pane fade show active" id="edit" role="tabpanel">
+                <form th:action="@{/statement}" method="get" class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <select name="editId" class="form-select" onchange="this.form.submit()">
+                            <option th:each="t : ${transactions}"
+                                    th:value="${t.id}"
+                                    th:text="${'ID: ' + t.id + ' | ' + t.data + ' | ' + t.descricao + ' | R$ ' + t.valor}"
+                                    th:selected="${editTransaction != null && editTransaction.id == t.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-outline-primary">Carregar</button>
+                    </div>
+                </form>
+
+                <form th:action="@{/statement/{id}/update(id=${editTransaction.id})}" method="post" th:if="${editTransaction != null}">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-select">
+                                <option th:each="t : ${allTipos}" th:value="${t}"
+                                        th:text="${t.displayName}"
+                                        th:selected="${editTransaction.tipo == t}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Valor (R$)</label>
+                            <input type="number" step="0.01" name="valor" class="form-control"
+                                   th:value="${editTransaction.valor}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data</label>
+                            <input type="date" name="data" class="form-control" th:value="${editTransaction.data}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Descrição</label>
+                            <input type="text" name="descricao" class="form-control"
+                                   th:value="${editTransaction.descricao}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Conta</label>
+                            <select name="conta" class="form-select">
+                                <option th:each="c : ${allContas}" th:value="${c.nome}"
+                                        th:text="${c.nome}"
+                                        th:selected="${editTransaction.conta == c.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Categoria</label>
+                            <select name="categoria" class="form-select">
+                                <option th:each="cat : ${allCategorias}" th:value="${cat.nome}"
+                                        th:text="${cat.nome}"
+                                        th:selected="${editTransaction.categoria == cat.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">💾 Atualizar</button>
+                        </div>
+                    </div>
+                </form>
+                <form th:action="@{/statement/{id}/delete(id=${editTransaction.id})}" method="post" class="mt-2"
+                      th:if="${editTransaction != null}"
+                      onsubmit="return confirm('Excluir este lançamento?')">
+                    <button type="submit" class="btn btn-danger">🗑️ Excluir</button>
+                </form>
+            </div>
+
+            <!-- Tab 2: Bulk Edit -->
+            <div class="tab-pane fade" id="bulk" role="tabpanel">
+                <form th:action="@{/statement/bulk-update}" method="post">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll" onchange="toggleCheckboxes(this)"></th>
+                                    <th>ID</th><th>Data</th><th>Descrição</th><th>Conta</th><th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="t : ${transactions}">
+                                    <td><input type="checkbox" name="ids" th:value="${t.id}" class="bulk-check"></td>
+                                    <td th:text="${t.id}"></td>
+                                    <td th:text="${t.data}"></td>
+                                    <td th:text="${t.descricao}"></td>
+                                    <td th:text="${t.conta}"></td>
+                                    <td>R$ <span th:text="${#numbers.formatDecimal(t.valor, 0, 'COMMA', 2, 'POINT')}"></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Substituir Conta</label>
+                            <select name="conta" class="form-select">
+                                <option value="Não Alterar">Não Alterar</option>
+                                <option th:each="c : ${allContas}" th:value="${c.nome}" th:text="${c.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Substituir Categoria</label>
+                            <select name="categoria" class="form-select">
+                                <option value="Não Alterar">Não Alterar</option>
+                                <option th:each="cat : ${allCategorias}" th:value="${cat.nome}" th:text="${cat.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">⚡ Aplicar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab 3: Restructure Installments -->
+            <div class="tab-pane fade" id="parc" role="tabpanel">
+                <div th:if="${not #maps.isEmpty(installmentGroups)}">
+                    <form th:action="@{/statement/restructure}" method="post">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Selecione a Compra Parcelada</label>
+                                <select name="grupoKey" class="form-select"
+                                        onchange="preencherRestructure(this)">
+                                    <option th:each="entry : ${installmentGroups}"
+                                            th:value="${entry.key}"
+                                            th:text="${entry.key}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Novo Dia de Vencimento</label>
+                                <input type="number" name="novoDia" min="1" max="31" class="form-control" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Nova Quantidade</label>
+                                <input type="number" name="novaQuantidade" min="1" max="120" class="form-control" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Novo Valor (R$)</label>
+                                <input type="number" step="0.01" name="novoValor" min="0" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Nova Conta</label>
+                                <select name="novaConta" class="form-select">
+                                    <option th:each="c : ${allContas}" th:value="${c.nome}" th:text="${c.nome}"></option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">🛠️ Reestruturar Parcelamento</button>
+                            </div>
+                            <input type="hidden" name="descricao" id="restDesc">
+                            <input type="hidden" name="conta" id="restConta">
+                            <input type="hidden" name="valor" id="restValor">
+                        </div>
+                    </form>
+                </div>
+                <p th:if="${#maps.isEmpty(installmentGroups)}" class="text-muted">Nenhuma compra parcelada encontrada.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCheckboxes(source) {
+        document.querySelectorAll('.bulk-check').forEach(cb => cb.checked = source.checked);
+    }
+
+    function preencherRestructure(select) {
+        const key = select.value;
+        if (!key) return;
+        const parts = key.split(' | R$ ');
+        const descConta = parts[0];
+        const lastSep = descConta.lastIndexOf(' | ');
+        document.getElementById('restDesc').value = descConta.substring(0, lastSep);
+        document.getElementById('restConta').value = descConta.substring(lastSep + 3);
+        document.getElementById('restValor').value = parts[1] ? parts[1].replace(',', '.') : '0';
+    }
+</script>
+</body>
+</html>

@@ -33,4 +33,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT t FROM Transaction t WHERE t.conta = :conta AND t.tipo = :tipo ORDER BY t.data")
     List<Transaction> findByContaAndTipo(@Param("conta") String conta, @Param("tipo") TransactionType tipo);
+
+    @Query("SELECT t FROM Transaction t WHERE t.parcela LIKE '%/%' ORDER BY t.data")
+    List<Transaction> findInstallments();
+
+    @Query("SELECT t FROM Transaction t WHERE t.descricao = :descricao AND t.conta = :conta AND t.valor = :valor ORDER BY t.data")
+    List<Transaction> findInstallmentGroup(
+            @Param("descricao") String descricao,
+            @Param("conta") String conta,
+            @Param("valor") BigDecimal valor);
 }
