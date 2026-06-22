@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+<style>
+.nav-tabs .nav-link { color: #adb5bd; }
+.nav-tabs .nav-link.active { color: #fff; background: #2b3035; border-color: #495057; }
+.tab-pane { padding-top: 1.5rem; }
+.settings-table td { vertical-align: middle; }
+.btn-sm-action { padding: 0.15rem 0.4rem; font-size: 0.75rem; }
+.form-card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 1.25rem; }
+</style>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Configurações do Sistema</h1>
+    <p class="text-muted">Edite as tabelas abaixo. Altere os dados e clique em Salvar.</p>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cards">💳 Cartões</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#accounts">🏢 Bancos/Contas</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#categories">🏷️ Categorias</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaries">📅 Salários Fixos</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- CARDS -->
+        <div class="tab-pane fade show active" id="cards">
+            <table class="table table-dark table-striped settings-table">
+                <thead><tr><th>Nome</th><th>Banco</th><th>Fechamento</th><th>Vencimento</th><th style="width:120px">Ações</th></tr></thead>
+                <tbody>
+                    <tr th:each="c : ${cards}">
+                        <td th:text="${c.nome}"></td>
+                        <td th:text="${c.banco}"></td>
+                        <td th:text="${c.diaFechamento}"></td>
+                        <td th:text="${c.diaVencimento}"></td>
+                        <td>
+                            <a th:href="@{/settings(editType='card', editKey=${c.nome})}" class="btn btn-sm btn-outline-warning btn-sm-action">✏️</a>
+                            <form th:action="@{/settings/cards/delete}" method="post" style="display:inline" onsubmit="return confirm('Remover ${c.nome}?')">
+                                <input type="hidden" name="nome" th:value="${c.nome}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger btn-sm-action">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(cards)}"><td colspan="5" class="text-muted text-center">Nenhum cartão cadastrado.</td></tr>
+                </tbody>
+            </table>
+            <div class="form-card">
+                <h6 th:if="${editSection == 'cards'}" class="mb-3">✏️ Editar Cartão</h6>
+                <h6 th:if="${editSection != 'cards'}" class="mb-3">➕ Novo Cartão</h6>
+                <form th:action="@{/settings/cards/save}" method="post">
+                    <input type="hidden" name="originalNome" th:value="${editSection == 'cards' ? editItem.nome : ''}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Nome</label>
+                            <input type="text" name="nome" class="form-control" required
+                                   th:value="${editSection == 'cards' ? editItem.nome : ''}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Banco</label>
+                            <input type="text" name="banco" class="form-control" required
+                                   th:value="${editSection == 'cards' ? editItem.banco : ''}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dia Fechamento</label>
+                            <input type="number" name="diaFechamento" min="1" max="31" class="form-control" required
+                                   th:value="${editSection == 'cards' ? editItem.diaFechamento : ''}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dia Vencimento</label>
+                            <input type="number" name="diaVencimento" min="1" max="31" class="form-control" required
+                                   th:value="${editSection == 'cards' ? editItem.diaVencimento : ''}">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+                    <a th:if="${editSection == 'cards'}" th:href="@{/settings#cards}" class="btn btn-secondary mt-3">Cancelar</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- ACCOUNTS -->
+        <div class="tab-pane fade" id="accounts">
+            <table class="table table-dark table-striped settings-table">
+                <thead><tr><th>Nome</th><th>Tipo</th><th style="width:120px">Ações</th></tr></thead>
+                <tbody>
+                    <tr th:each="a : ${accounts}">
+                        <td th:text="${a.nome}"></td>
+                        <td th:text="${a.tipo}"></td>
+                        <td>
+                            <a th:href="@{/settings(editType='account', editKey=${a.nome})}" class="btn btn-sm btn-outline-warning btn-sm-action">✏️</a>
+                            <form th:action="@{/settings/accounts/delete}" method="post" style="display:inline" onsubmit="return confirm('Remover ${a.nome}?')">
+                                <input type="hidden" name="nome" th:value="${a.nome}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger btn-sm-action">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(accounts)}"><td colspan="3" class="text-muted text-center">Nenhuma conta cadastrada.</td></tr>
+                </tbody>
+            </table>
+            <div class="form-card">
+                <h6 th:if="${editSection == 'accounts'}" class="mb-3">✏️ Editar Conta</h6>
+                <h6 th:if="${editSection != 'accounts'}" class="mb-3">➕ Nova Conta</h6>
+                <form th:action="@{/settings/accounts/save}" method="post">
+                    <input type="hidden" name="originalNome" th:value="${editSection == 'accounts' ? editItem.nome : ''}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome</label>
+                            <input type="text" name="nome" class="form-control" required
+                                   th:value="${editSection == 'accounts' ? editItem.nome : ''}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-select" required>
+                                <option value="Conta Corrente" th:selected="${editSection == 'accounts' and editItem.tipo == 'Conta Corrente'}">Conta Corrente</option>
+                                <option value="VR" th:selected="${editSection == 'accounts' and editItem.tipo == 'VR'}">VR</option>
+                                <option value="Poupança" th:selected="${editSection == 'accounts' and editItem.tipo == 'Poupança'}">Poupança</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+                    <a th:if="${editSection == 'accounts'}" th:href="@{/settings#accounts}" class="btn btn-secondary mt-3">Cancelar</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="tab-pane fade" id="categories">
+            <table class="table table-dark table-striped settings-table">
+                <thead><tr><th>Nome</th><th style="width:120px">Ações</th></tr></thead>
+                <tbody>
+                    <tr th:each="c : ${categories}">
+                        <td th:text="${c.nome}"></td>
+                        <td>
+                            <a th:href="@{/settings(editType='category', editKey=${c.nome})}" class="btn btn-sm btn-outline-warning btn-sm-action">✏️</a>
+                            <form th:action="@{/settings/categories/delete}" method="post" style="display:inline" onsubmit="return confirm('Remover ${c.nome}?')">
+                                <input type="hidden" name="nome" th:value="${c.nome}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger btn-sm-action">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(categories)}"><td colspan="2" class="text-muted text-center">Nenhuma categoria cadastrada.</td></tr>
+                </tbody>
+            </table>
+            <div class="form-card">
+                <h6 th:if="${editSection == 'categories'}" class="mb-3">✏️ Editar Categoria</h6>
+                <h6 th:if="${editSection != 'categories'}" class="mb-3">➕ Nova Categoria</h6>
+                <form th:action="@{/settings/categories/save}" method="post">
+                    <input type="hidden" name="originalNome" th:value="${editSection == 'categories' ? editItem.nome : ''}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome</label>
+                            <input type="text" name="nome" class="form-control" required
+                                   th:value="${editSection == 'categories' ? editItem.nome : ''}">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+                    <a th:if="${editSection == 'categories'}" th:href="@{/settings#categories}" class="btn btn-secondary mt-3">Cancelar</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- SALARIES -->
+        <div class="tab-pane fade" id="salaries">
+            <table class="table table-dark table-striped settings-table">
+                <thead><tr><th>Nome</th><th>Dia</th><th>Valor</th><th>Conta</th><th style="width:120px">Ações</th></tr></thead>
+                <tbody>
+                    <tr th:each="s : ${salaries}">
+                        <td th:text="${s.nome}"></td>
+                        <td th:text="${s.dia}"></td>
+                        <td>R$ <span th:text="${#numbers.formatDecimal(s.valor, 0, 'COMMA', 2, 'POINT')}"></span></td>
+                        <td th:text="${s.conta}"></td>
+                        <td>
+                            <a th:href="@{/settings(editType='salary', editId=${s.id})}" class="btn btn-sm btn-outline-warning btn-sm-action">✏️</a>
+                            <form th:action="@{/settings/salaries/delete}" method="post" style="display:inline" onsubmit="return confirm('Remover ${s.nome}?')">
+                                <input type="hidden" name="id" th:value="${s.id}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger btn-sm-action">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(salaries)}"><td colspan="5" class="text-muted text-center">Nenhum salário cadastrado.</td></tr>
+                </tbody>
+            </table>
+            <div class="form-card">
+                <h6 th:if="${editSection == 'salaries'}" class="mb-3">✏️ Editar Salário</h6>
+                <h6 th:if="${editSection != 'salaries'}" class="mb-3">➕ Novo Salário</h6>
+                <form th:action="@{/settings/salaries/save}" method="post">
+                    <input type="hidden" name="id" th:value="${editSection == 'salaries' ? editItem.id : ''}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Nome</label>
+                            <input type="text" name="nome" class="form-control" required
+                                   th:value="${editSection == 'salaries' ? editItem.nome : ''}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dia</label>
+                            <input type="number" name="dia" min="1" max="31" class="form-control" required
+                                   th:value="${editSection == 'salaries' ? editItem.dia : ''}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Valor (R$)</label>
+                            <input type="number" name="valor" step="0.01" class="form-control" required
+                                   th:value="${editSection == 'salaries' ? editItem.valor : ''}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Conta</label>
+                            <input type="text" name="conta" class="form-control" required
+                                   th:value="${editSection == 'salaries' ? editItem.conta : ''}">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+                    <a th:if="${editSection == 'salaries'}" th:href="@{/settings#salaries}" class="btn btn-secondary mt-3">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash;
+    if (hash) {
+        var tab = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (tab) { var bsTab = new bootstrap.Tab(tab); bsTab.show(); }
+    }
+});
+</script>
+</body>
+</html>
