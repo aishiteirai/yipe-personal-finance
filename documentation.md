@@ -445,22 +445,87 @@ mvn package -DskipTests
 java -jar target/yipe-finance-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
+**Commit conventions:**
+All commits follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <description>
+
+<body>
+```
+
+| Type     | Purpose                      |
+|----------|------------------------------|
+| `feat`   | New feature                  |
+| `fix`    | Bug fix                      |
+| `docs`   | Documentation only           |
+| `refactor` | Code refactor (no feature/fix) |
+| `test`   | Add/update tests             |
+| `chore`  | Maintenance, dependencies    |
+
+**Rules:**
+- Subject ≤50 chars, imperative mood ("add" not "added")
+- Body explains why, not implementation diary
+- One logical change per commit
+- Every commit must compile on its own
+- Tests belong in same commit as the behavior they verify
+
+Examples:
+```
+feat(transactions): add recurring installment support
+fix(export): handle CSV special characters in description
+docs(readme): update setup instructions
+```
+
 ---
 
-## 11. Migration Roadmap
+## 12. OpenCode Development Tools
 
-| Phase | Tasks |
-|-------|-------|
-| **Phase 1** | Project setup (Maven, dependencies, application.yml, Flyway initial schema) |
-| **Phase 2** | Entities + Repositories + DataInitializer |
-| **Phase 3** | Layout template + sidebar navigation + CSS |
-| **Phase 4** | Transaction module (create, list, edit, delete, installments) |
-| **Phase 5** | Statement module (filters, table, bulk edit, installment restructure) |
-| **Phase 6** | Dashboard module (metrics, charts, daily x-ray) |
-| **Phase 7** | Invoice module (credit card bill calculation) |
-| **Phase 8** | Budget module (rule sliders, category mapping, progress bars) |
-| **Phase 9** | Settings module (CRUD tables for cards/accounts/categories/salaries) |
-| **Phase 10** | Import/Export module (CSV) |
-| **Phase 11** | Security (Spring Security, login page) |
-| **Phase 12** | Testing (unit + integration) |
-| **Phase 13** | Polish (error handling, validation, edge cases) |
+To accelerate the migration, OpenCode skills and custom agents have been installed. See [YIPE-SKILLS-AND-AGENTS.md](YIPE-SKILLS-AND-AGENTS.md) for full documentation.
+
+### 12.1 Installed Skills (Community)
+
+Skills teach the AI best practices for Spring Boot, Java, testing, and project workflows.
+
+| Skill | Source | Purpose |
+|-------|--------|---------|
+| `java-springboot` | vekzz-dev | Spring Boot patterns (DI, DTOs, validation, security) |
+| `spring-boot-engineer` | synapse-ai-hub | Complete Spring Boot workflow with verification gates |
+| `java-springboot-testing` | vekzz-dev | Test slices, MockMvc, Testcontainers |
+| `java-junit` | vekzz-dev | JUnit 5, parametrized tests, AssertJ, Mockito |
+| `java-architecture` | Happydong | Enterprise architecture, packages by feature |
+| `java-ddd-patterns` | Happydong | DDD, rich domain model, MapStruct, error codes |
+| `java-code-style` | Happydong | Naming, logging, exception conventions |
+| `java-decoupling` | Happydong | Dependency injection, events, ports & adapters |
+| `java-design-patterns` | Happydong | GoF patterns for business logic |
+| `git-commit` | vekzz-dev | Conventional commits with diff analysis |
+| `changelog-maintenance` | vekzz-dev | Semver, changelogs, release notes |
+
+### 12.2 Custom Agents (Project-specific)
+
+Subagents invoked with `@name` in any conversation:
+
+- **`@yipe-scaffold`** — Creates a complete Spring Boot module (entity → repository → service → controller → Thymeleaf template → Flyway migration) following project conventions.
+- **`@yipe-test-gen`** — Generates JUnit 5 + Mockito tests (unit + slice + integration) for any class.
+
+### 12.3 System Skills (Pre-installed)
+
+Available globally: `cavecrew` (subagent delegation), `caveman` (token compression), `caveman-commit`, `caveman-compress`, `caveman-help`, `caveman-review`, `caveman-stats`, `customize-opencode`.
+
+## 13. Migration Roadmap
+
+| Phase | Status | Tasks |
+|-------|--------|-------|
+| **Phase 1** | ✅ Done | Project setup (Maven, dependencies, application.yml, Flyway initial schema) |
+| **Phase 2** | ✅ Done | Entities + Repositories + DataInitializer |
+| **Phase 3** | ✅ Done | Layout template + sidebar navigation + CSS |
+| **Phase 4** | ✅ Done | Transaction module (create, list, edit, delete, installments) |
+| **Phase 5** | ✅ Done | Statement module (filters, table, bulk edit, installment restructure) |
+| **Phase 6** | ✅ Done | Dashboard module (metrics, charts, daily x-ray) |
+| **Phase 7** | ✅ Done | Invoice module (credit card bill calculation) |
+| **Phase 8** | ✅ Done | Budget module (rule sliders, category mapping, progress bars) |
+| **Phase 9** | ✅ Done | Settings module (CRUD tables for cards/accounts/categories/salaries) |
+| **Phase 10** | 🔄 In progress | Import/Export module (CSV) |
+| **Phase 11** | ⚠️ Partial | Security (Spring Security, login page — config exists, permissive) |
+| **Phase 12** | ❌ Not started | Testing (unit + integration) |
+| **Phase 13** | ❌ Not started | Polish (error handling, validation, edge cases, DTOs, mappers) |

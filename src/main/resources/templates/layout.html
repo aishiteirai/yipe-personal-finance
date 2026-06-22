@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,7 @@
 </head>
 <body>
     <div class="d-flex" id="wrapper">
-        <div class="sidebar" id="sidebar-wrapper">
+        <div class="sidebar d-flex flex-column" id="sidebar-wrapper">
             <div class="sidebar-heading">⚡ YIPE</div>
             <div class="list-group list-group-flush">
                 <a th:classappend="${activePage == 'dashboard'} ? 'active' : ''"
@@ -28,6 +29,12 @@
                    th:href="@{/settings}" class="list-group-item list-group-item-action">⚙️ Configurações</a>
                 <a th:classappend="${activePage == 'import-export'} ? 'active' : ''"
                    th:href="@{/import-export}" class="list-group-item list-group-item-action">📁 Importar/Exportar</a>
+            </div>
+            <div class="mt-auto p-3 border-top border-secondary" sec:authorize="isAuthenticated()">
+                <small class="text-secondary d-block mb-1" sec:authentication="name"></small>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm w-100">🚪 Sair</button>
+                </form>
             </div>
         </div>
 
