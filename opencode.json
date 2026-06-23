@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "CLAUDE.md",
+    "documentation/development.md",
+    "documentation/documentation.md",
+    "documentation/design.md",
+    "documentation/YIPE-SKILLS-AND-AGENTS.md"
+  ],
+  "agent": {
+    "plan": {
+      "mode": "primary",
+      "description": "Analyze code and plan changes without modifying files. Read-only by default.",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "ask",
+          "git diff": "allow",
+          "git log*": "allow",
+          "grep -r*": "allow",
+          "find *": "allow",
+          "ls *": "allow",
+          "cat *": "allow",
+          "mvn compile*": "allow",
+          "mvn test-compile*": "allow",
+          "mvn test -Dtest=*": "ask",
+          "rg *": "allow"
+        }
+      }
+    },
+    "build": {
+      "mode": "primary",
+      "description": "Full development work with all tools enabled. Default agent.",
+      "permission": {
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow",
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow"
+      }
+    }
+  },
+  "permission": {
+    "skill": {
+      "*": "allow"
+    }
+  }
+}
