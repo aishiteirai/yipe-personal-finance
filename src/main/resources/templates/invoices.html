@@ -4,14 +4,14 @@
       layout:decorate="~{layout}">
 <body>
 <div layout:fragment="content">
-    <h1>Faturas de Cartão de Crédito</h1>
+    <h1><i class="bi bi-credit-card"></i> Faturas de Cartão de Crédito</h1>
 
-    <div th:if="${noData}" class="alert alert-info">
-        Nenhum lançamento de Crédito encontrado.
+    <div th:if="${noData}" class="alert alert-info d-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>Nenhum lançamento de Crédito encontrado.</span>
     </div>
 
     <div th:if="${!noData}">
-        <!-- Card + Period Selectors -->
         <form th:action="@{/invoices}" method="get" class="row g-3 mb-4">
             <div class="col-md-6">
                 <label class="form-label">Selecione o Cartão</label>
@@ -32,26 +32,24 @@
         </form>
 
         <div th:if="${invoice != null}">
-            <!-- Invoice Summary -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <div class="metric-card">
-                        <h6>Total da Fatura</h6>
+                        <h6><i class="bi bi-credit-card-2-front"></i> Total da Fatura</h6>
                         <h3 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(invoice.total, 0, 'COMMA', 2, 'POINT')}"></span></h3>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="metric-card">
-                        <h6>Vencimento estimado</h6>
+                        <h6><i class="bi bi-calendar-event"></i> Vencimento estimado</h6>
                         <h5 class="mb-0" th:text="${invoice.diaVencimento + ' de ' + invoice.nomeMes + ' de ' + invoice.ano}"></h5>
                     </div>
                 </div>
             </div>
 
-            <!-- Transactions Table -->
             <div th:if="${not #lists.isEmpty(invoice.transactions)}">
                 <div class="table-responsive">
-                    <table class="table table-dark table-striped">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Parcela</th>
@@ -69,8 +67,9 @@
                     </table>
                 </div>
             </div>
-            <div th:if="${#lists.isEmpty(invoice.transactions)}" class="alert alert-success">
-                Sua fatura está zerada neste mês. 🎉
+            <div th:if="${#lists.isEmpty(invoice.transactions)}" class="alert alert-success d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Sua fatura está zerada neste mês.</span>
             </div>
         </div>
     </div>

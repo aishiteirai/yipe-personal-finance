@@ -2,32 +2,30 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
-<head>
-    <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-</head>
 <body>
 <div layout:fragment="content">
-    <h1>Visão Geral</h1>
+    <h1><i class="bi bi-bar-chart-fill"></i> Visão Geral</h1>
 
     <!-- Overview Metrics -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="metric-card">
-                <h6>Saldo Geral (Conta + VR)</h6>
+                <h6><i class="bi bi-wallet"></i> Saldo Geral (Conta + VR)</h6>
                 <h3 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(saldoGeral, 0, 'COMMA', 2, 'POINT')}"></span></h3>
             </div>
         </div>
         <div class="col-md-4">
             <div class="metric-card">
-                <h6>Total Investido/Reservado</h6>
+                <h6><i class="bi bi-piggy-bank"></i> Total Investido/Reservado</h6>
                 <h3 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(totalInvestido, 0, 'COMMA', 2, 'POINT')}"></span></h3>
             </div>
         </div>
         <div class="col-md-4">
             <div class="metric-card">
-                <h6>Corrigir Saldo</h6>
-                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#ajusteModal">⚙️ Ajustar</button>
+                <h6><i class="bi bi-gear"></i> Corrigir Saldo</h6>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#ajusteModal">
+                    <i class="bi bi-sliders"></i> Ajustar
+                </button>
             </div>
         </div>
     </div>
@@ -36,12 +34,17 @@
     <div class="modal fade" id="ajusteModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Corrigir Saldo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-sliders"></i> Corrigir Saldo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
                 <form th:action="@{/transactions}" method="post">
                     <div class="modal-body">
-                        <p>Ajuste o saldo. O histórico dos gráficos não será afetado.</p>
-                        <input type="number" step="0.01" name="valor" class="form-control" th:value="${saldoGeral}">
+                        <p class="text-secondary">Ajuste o saldo. O histórico dos gráficos não será afetado.</p>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" step="0.01" name="valor" class="form-control" th:value="${saldoGeral}">
+                        </div>
                         <input type="hidden" name="tipo" th:value="${saldoGeral >= 0} ? 'ADJUSTMENT_INCOME' : 'ADJUSTMENT_EXPENSE'">
                         <input type="hidden" name="data" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
                         <input type="hidden" name="descricao" value="Correção Manual de Saldo">
@@ -49,7 +52,7 @@
                         <input type="hidden" name="categoria" value="Ajuste">
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Aplicar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Aplicar</button>
                     </div>
                 </form>
             </div>
@@ -59,24 +62,33 @@
     <hr>
 
     <!-- Today's Snapshot -->
-    <h3>🔍 Raio-X de Hoje</h3>
+    <h3><i class="bi bi-search"></i> Raio-X de Hoje</h3>
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="alert alert-info">
-                <strong>Gasto Hoje (Crédito):</strong> R$ <span th:text="${#numbers.formatDecimal(gastoCredHoje, 0, 'COMMA', 2, 'POINT')}"></span>
-                <br><a th:href="@{/statement(tipo='CREDIT', dia=${#dates.day(#dates.createNow())})}" class="btn btn-sm btn-outline-info mt-2">Ver no Extrato ➔</a>
+            <div class="alert alert-info d-flex align-items-center gap-2">
+                <i class="bi bi-credit-card-2-front fs-4"></i>
+                <div>
+                    <strong>Gasto Hoje (Crédito):</strong> R$ <span th:text="${#numbers.formatDecimal(gastoCredHoje, 0, 'COMMA', 2, 'POINT')}"></span>
+                    <br><a th:href="@{/statement(tipo='CREDIT', dia=${#dates.day(#dates.createNow())})}" class="btn btn-sm btn-outline-info mt-1"><i class="bi bi-eye"></i> Ver no Extrato</a>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="alert alert-warning">
-                <strong>Gasto Hoje (Débito/VR):</strong> R$ <span th:text="${#numbers.formatDecimal(gastoDebHoje, 0, 'COMMA', 2, 'POINT')}"></span>
-                <br><a th:href="@{/statement(tipo='DEBIT')}" class="btn btn-sm btn-outline-warning mt-2">Ver no Extrato ➔</a>
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <i class="bi bi-cash-stack fs-4"></i>
+                <div>
+                    <strong>Gasto Hoje (Débito/VR):</strong> R$ <span th:text="${#numbers.formatDecimal(gastoDebHoje, 0, 'COMMA', 2, 'POINT')}"></span>
+                    <br><a th:href="@{/statement(tipo='DEBIT')}" class="btn btn-sm btn-outline-warning mt-1"><i class="bi bi-eye"></i> Ver no Extrato</a>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="alert alert-success">
-                <strong>Saldo no Fim do Dia:</strong> R$ <span th:text="${#numbers.formatDecimal(saldoHoje, 0, 'COMMA', 2, 'POINT')}"></span>
-                <br><a th:href="@{/statement}" class="btn btn-sm btn-outline-success mt-2">Ver Extrato Completo 📜</a>
+            <div class="alert alert-success d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle fs-4"></i>
+                <div>
+                    <strong>Saldo no Fim do Dia:</strong> R$ <span th:text="${#numbers.formatDecimal(saldoHoje, 0, 'COMMA', 2, 'POINT')}"></span>
+                    <br><a th:href="@{/statement}" class="btn btn-sm btn-outline-success mt-1"><i class="bi bi-receipt"></i> Ver Extrato Completo</a>
+                </div>
             </div>
         </div>
     </div>
@@ -85,109 +97,101 @@
 
     <!-- Analysis Section -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">📊 Central de Análises</h3>
+        <h3 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Central de Análises</h3>
     </div>
 
-    <!-- Filters -->
-    <form th:action="@{/dashboard}" method="get" class="row g-3 mb-4">
+    <!-- Filters (HTMX: partial page update instead of full reload) -->
+    <div class="row g-3 mb-4">
         <div class="col-auto">
-            <select name="ano" class="form-select">
+            <select name="ano" class="form-select" id="anoSelect"
+                    hx-get="/dashboard" hx-target="#charts-area" hx-trigger="change"
+                    hx-include="#mesSelect">
                 <option th:each="y : ${availableYears}" th:value="${y}"
                         th:selected="${anoSelecionado == y}" th:text="${y}"></option>
             </select>
         </div>
         <div class="col-auto">
-            <select name="mes" class="form-select">
+            <select name="mes" class="form-select" id="mesSelect"
+                    hx-get="/dashboard" hx-target="#charts-area" hx-trigger="change"
+                    hx-include="#anoSelect">
                 <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
                         th:selected="${mesSelecionado == m}"
                         th:text="${mesesPt[m - 1]}"></option>
             </select>
         </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Atualizar</button>
-        </div>
-    </form>
-
-    <!-- Monthly Metrics -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="metric-card">
-                <h6>Entradas (<span th:text="${mesesPt[mesSelecionado - 1]}"></span>)</h6>
-                <h4 class="text-success">R$ <span th:text="${#numbers.formatDecimal(entradasMes, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="metric-card">
-                <h6>Despesas (<span th:text="${mesesPt[mesSelecionado - 1]}"></span>)</h6>
-                <h4 class="text-danger">R$ <span th:text="${#numbers.formatDecimal(despesasMes, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="metric-card">
-                <h6>Investimentos (<span th:text="${mesesPt[mesSelecionado - 1]}"></span>)</h6>
-                <h4 class="text-info">R$ <span th:text="${#numbers.formatDecimal(investMes, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-            </div>
-        </div>
     </div>
 
-    <!-- Charts Grid -->
-    <div class="row g-4">
-        <!-- Chart 1: Daily Evolution (Line) -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">📈 Evolução Diária de Gastos</h5>
-                    <canvas id="chartDaily"></canvas>
+    <!-- Monthly Metrics + Charts (replaced by HTMX on filter change) -->
+    <div id="charts-area">
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h6><i class="bi bi-arrow-down-circle text-success"></i> Entradas (<span th:text="${mesesPt[mesSelecionado - 1]}"></span>)</h6>
+                    <h4 class="text-success">R$ <span th:text="${#numbers.formatDecimal(entradasMes, 0, 'COMMA', 2, 'POINT')}"></span></h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h6><i class="bi bi-arrow-up-circle text-danger"></i> Despesas (<span th:text="${mesesPt[mesSelecionado - 1]}"></span>)</h6>
+                    <h4 class="text-danger">R$ <span th:text="${#numbers.formatDecimal(despesasMes, 0, 'COMMA', 2, 'POINT')}"></span></h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h6><i class="bi bi-pie-chart text-info"></i> Investimentos (<span th:text="${mesesPt[mesSelecionado - 1]}"></span>)</h6>
+                    <h4 class="text-info">R$ <span th:text="${#numbers.formatDecimal(investMes, 0, 'COMMA', 2, 'POINT')}"></span></h4>
                 </div>
             </div>
         </div>
 
-        <!-- Chart 2: Expenses by Category (Bar) -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">📊 Despesas por Categoria</h5>
-                    <canvas id="chartCategory"></canvas>
+        <!-- Charts Grid -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-graph-up-arrow"></i> Evolução Diária de Gastos</h5>
+                        <canvas id="chartDaily"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Chart 3: Flow (Donut replacing Sankey) -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🔀 Fluxo por Conta</h5>
-                    <canvas id="chartFlow"></canvas>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-bar-chart"></i> Despesas por Categoria</h5>
+                        <canvas id="chartCategory"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Chart 4: Waterfall (Bar comparison) -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🌊 Formação do Saldo Mensal</h5>
-                    <canvas id="chartWaterfall"></canvas>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-diagram-3"></i> Fluxo por Conta</h5>
+                        <canvas id="chartFlow"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Chart 5: Radar -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">🕸️ Perfil de Consumo</h5>
-                    <canvas id="chartRadar"></canvas>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-water"></i> Formação do Saldo Mensal</h5>
+                        <canvas id="chartWaterfall"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Chart 6: Yearly Stacked Bar -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">📅 Evolução Anual</h5>
-                    <canvas id="chartYearly"></canvas>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-diagram-3"></i> Perfil de Consumo</h5>
+                        <canvas id="chartRadar"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-calendar"></i> Evolução Anual</h5>
+                        <canvas id="chartYearly"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,126 +204,135 @@ const COLORS = [
     '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
 ];
 
-// Chart 1: Daily Evolution
-new Chart(document.getElementById('chartDaily'), {
-    type: 'line',
-    data: {
-        labels: /*[[${dias}]]*/ [],
-        datasets: [{
-            label: 'Gastos (R$)',
-            data: /*[[${valoresDiarios}]]*/ [],
-            borderColor: '#1f77b4',
-            backgroundColor: 'rgba(31,119,180,0.1)',
-            fill: true,
-            tension: 0.3
-        }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } } }
-});
+function initCharts() {
+    // Chart 1: Daily Evolution
+    new Chart(document.getElementById('chartDaily'), {
+        type: 'line',
+        data: {
+            labels: /*[[${dias}]]*/ [],
+            datasets: [{
+                label: 'Gastos (R$)',
+                data: /*[[${valoresDiarios}]]*/ [],
+                borderColor: '#1f77b4',
+                backgroundColor: 'rgba(31,119,180,0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
 
-// Chart 2: Category Bar
-new Chart(document.getElementById('chartCategory'), {
-    type: 'bar',
-    data: {
-        labels: /*[[${categorias}]]*/ [],
-        datasets: [{
-            label: 'R$',
-            data: /*[[${valoresCategoria}]]*/ [],
-            backgroundColor: COLORS.slice(0, /*[[${#lists.size(categorias)}]]*/),
-            borderRadius: 4
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        plugins: { legend: { display: false } }
-    }
-});
+    // Chart 2: Category Bar
+    new Chart(document.getElementById('chartCategory'), {
+        type: 'bar',
+        data: {
+            labels: /*[[${categorias}]]*/ [],
+            datasets: [{
+                label: 'R$',
+                data: /*[[${valoresCategoria}]]*/ [],
+                backgroundColor: COLORS.slice(0, /*[[${#lists.size(categorias)}]]*/),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
 
-// Chart 3: Flow Donut
-const sankeyNodes = /*[[${sankeyNodes}]]*/ [];
-const sankeyLinks = /*[[${sankeyLinks}]]*/ || [];
-const flowLabels = [...new Set(sankeyLinks.map(l => l.source))];
-const flowValues = flowLabels.map(src =>
-    sankeyLinks.filter(l => l.source === src).reduce((a, l) => a + l.value, 0)
-);
-new Chart(document.getElementById('chartFlow'), {
-    type: 'doughnut',
-    data: {
-        labels: flowLabels,
-        datasets: [{ data: flowValues, backgroundColor: COLORS }]
-    },
-    options: { responsive: true, plugins: { legend: { position: 'right' } } }
-});
+    // Chart 3: Flow Donut
+    const sankeyLinks = /*[[${sankeyLinks}]]*/ || [];
+    const flowLabels = [...new Set(sankeyLinks.map(l => l.source))];
+    const flowValues = flowLabels.map(src =>
+        sankeyLinks.filter(l => l.source === src).reduce((a, l) => a + l.value, 0)
+    );
+    new Chart(document.getElementById('chartFlow'), {
+        type: 'doughnut',
+        data: {
+            labels: flowLabels,
+            datasets: [{ data: flowValues, backgroundColor: COLORS }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'right' } } }
+    });
 
-// Chart 4: Waterfall (simple bar comparison)
-new Chart(document.getElementById('chartWaterfall'), {
-    type: 'bar',
-    data: {
-        labels: ['Entradas', 'Despesas', 'Investimentos', 'Saldo do Mês'],
-        datasets: [{
-            label: 'R$',
-            data: [
-                /*[[${entradasMes}]]*/,
-                -/*[[${despesasMes}]]*/,
-                -/*[[${investMes}]]*/,
-                /*[[${entradasMes - despesasMes - investMes}]]*/
-            ],
-            backgroundColor: ['#2ca02c', '#d62728', '#9467bd', '#1f77b4'],
-            borderRadius: 4
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
-    }
-});
+    // Chart 4: Waterfall
+    new Chart(document.getElementById('chartWaterfall'), {
+        type: 'bar',
+        data: {
+            labels: ['Entradas', 'Despesas', 'Investimentos', 'Saldo do Mês'],
+            datasets: [{
+                label: 'R$',
+                data: [
+                    /*[[${entradasMes}]]*/,
+                    -/*[[${despesasMes}]]*/,
+                    -/*[[${investMes}]]*/,
+                    /*[[${entradasMes - despesasMes - investMes}]]*/
+                ],
+                backgroundColor: ['#2ca02c', '#d62728', '#9467bd', '#1f77b4'],
+                borderRadius: 4
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
 
-// Chart 5: Radar
-const radarLabels = /*[[${categorias}]]*/ [];
-const radarValues = /*[[${valoresCategoria}]]*/ [];
-new Chart(document.getElementById('chartRadar'), {
-    type: 'radar',
-    data: {
-        labels: radarLabels,
-        datasets: [{
-            label: 'Gastos (R$)',
-            data: radarValues,
-            backgroundColor: 'rgba(31,119,180,0.2)',
-            borderColor: '#1f77b4',
-            pointBackgroundColor: '#1f77b4'
-        }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } } }
-});
+    // Chart 5: Radar
+    const radarLabels = /*[[${categorias}]]*/ [];
+    const radarValues = /*[[${valoresCategoria}]]*/ [];
+    new Chart(document.getElementById('chartRadar'), {
+        type: 'radar',
+        data: {
+            labels: radarLabels,
+            datasets: [{
+                label: 'Gastos (R$)',
+                data: radarValues,
+                backgroundColor: 'rgba(31,119,180,0.2)',
+                borderColor: '#1f77b4',
+                pointBackgroundColor: '#1f77b4'
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
 
-// Chart 6: Yearly Stacked Bar
-const yearly = /*[[${yearlyExpenses}]]*/ || [];
-const catMap = {};
-const mesesAno = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-yearly.forEach(t => {
-    const parts = t.data.split('-');
-    const mes = mesesAno[parseInt(parts[1]) - 1];
-    if (!catMap[t.categoria]) catMap[t.categoria] = {};
-    if (!catMap[t.categoria][mes]) catMap[t.categoria][mes] = 0;
-    catMap[t.categoria][mes] += t.valor;
-});
-const cats = Object.keys(catMap);
-new Chart(document.getElementById('chartYearly'), {
-    type: 'bar',
-    data: {
-        labels: mesesAno,
-        datasets: cats.map((cat, i) => ({
-            label: cat,
-            data: mesesAno.map(m => catMap[cat][m] || 0),
-            backgroundColor: COLORS[i % COLORS.length],
-            borderRadius: 2
-        }))
-    },
-    options: {
-        responsive: true,
-        scales: { x: { stacked: true }, y: { stacked: true } }
-    }
+    // Chart 6: Yearly Stacked Bar
+    const yearly = /*[[${yearlyExpenses}]]*/ || [];
+    const catMap = {};
+    const mesesAno = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    yearly.forEach(t => {
+        const parts = t.data.split('-');
+        const mes = mesesAno[parseInt(parts[1]) - 1];
+        if (!catMap[t.categoria]) catMap[t.categoria] = {};
+        if (!catMap[t.categoria][mes]) catMap[t.categoria][mes] = 0;
+        catMap[t.categoria][mes] += t.valor;
+    });
+    const cats = Object.keys(catMap);
+    new Chart(document.getElementById('chartYearly'), {
+        type: 'bar',
+        data: {
+            labels: mesesAno,
+            datasets: cats.map((cat, i) => ({
+                label: cat,
+                data: mesesAno.map(m => catMap[cat][m] || 0),
+                backgroundColor: COLORS[i % COLORS.length],
+                borderRadius: 2
+            }))
+        },
+        options: {
+            responsive: true,
+            scales: { x: { stacked: true }, y: { stacked: true } }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initCharts);
+// Re-init charts after HTMX swap
+document.addEventListener('htmx:afterSwap', function() {
+    // Destroy existing Chart instances
+    document.querySelectorAll('canvas').forEach(canvas => {
+        const chart = Chart.getChart(canvas);
+        if (chart) chart.destroy();
+    });
+    initCharts();
 });
 </script>
 </body>

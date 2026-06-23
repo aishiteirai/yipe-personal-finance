@@ -2,24 +2,18 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
-<head>
-<style>
-.progress-bar-container { width: 100%; background-color: #e6e6e6; border-radius: 5px; height: 18px; margin-top: 8px; }
-.progress-bar-fill { height: 18px; border-radius: 5px; transition: width .4s; }
-</style>
-</head>
 <body>
 <div layout:fragment="content">
-    <h1>Planejamento e Orçamento</h1>
+    <h1><i class="bi bi-bullseye"></i> Planejamento e Orçamento</h1>
 
-    <div th:if="${#lists.isEmpty(data.budgetData.allCategories)}" class="alert alert-info">
-        Adicione movimentações financeiras primeiro para usar o planejamento.
+    <div th:if="${#lists.isEmpty(data.budgetData.allCategories)}" class="alert alert-info d-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>Adicione movimentações financeiras primeiro para usar o planejamento.</span>
     </div>
 
     <div th:if="${not #lists.isEmpty(data.budgetData.allCategories)}">
 
         <form th:action="@{/budget}" method="post" id="budgetForm">
-            <!-- Period Selectors -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Ano</label>
@@ -39,56 +33,71 @@
             </div>
 
             <hr>
-            <h3>💰 Sua Renda Mensal</h3>
-            <p class="text-muted">O orçamento será calculado com base neste valor.</p>
+            <h3><i class="bi bi-wallet"></i> Sua Renda Mensal</h3>
+            <p class="text-secondary">O orçamento será calculado com base neste valor.</p>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label class="form-label">Renda Base para Orçamento (R$)</label>
-                    <input type="number" name="baseIncome" step="0.01" class="form-control"
-                           th:value="${data.budgetData.baseIncome}">
+                    <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        <input type="number" name="baseIncome" step="0.01" class="form-control"
+                               th:value="${data.budgetData.baseIncome}">
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <div class="metric-card">
-                        <h6>Renda Real (Entradas)</h6>
+                        <h6><i class="bi bi-arrow-down-circle text-success"></i> Renda Real (Entradas)</h6>
                         <h5>R$ <span th:text="${#numbers.formatDecimal(data.budgetData.realIncome, 0, 'COMMA', 2, 'POINT')}"></span></h5>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="metric-card">
-                        <h6>Renda Esperada (Salários)</h6>
+                        <h6><i class="bi bi-clock text-info"></i> Renda Esperada (Salários)</h6>
                         <h5>R$ <span th:text="${#numbers.formatDecimal(data.budgetData.expectedIncome, 0, 'COMMA', 2, 'POINT')}"></span></h5>
                     </div>
                 </div>
             </div>
 
             <hr>
-            <h3>⚖️ A Regra do Orçamento (%)</h3>
+            <h3><i class="bi bi-sliders"></i> A Regra do Orçamento (%)</h3>
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label class="form-label">Necessidades</label>
-                    <input type="number" name="pctNeeds" min="0" max="100" class="form-control"
-                           th:value="${data.budgetData.pctNeeds}">
+                    <div class="input-group">
+                        <input type="number" name="pctNeeds" min="0" max="100" class="form-control"
+                               th:value="${data.budgetData.pctNeeds}">
+                        <span class="input-group-text">%</span>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Desejos/Lazer</label>
-                    <input type="number" name="pctWants" min="0" max="100" class="form-control"
-                           th:value="${data.budgetData.pctWants}">
+                    <div class="input-group">
+                        <input type="number" name="pctWants" min="0" max="100" class="form-control"
+                               th:value="${data.budgetData.pctWants}">
+                        <span class="input-group-text">%</span>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Investimentos</label>
-                    <input type="number" name="pctInvest" min="0" max="100" class="form-control"
-                           th:value="${data.budgetData.pctInvest}">
+                    <div class="input-group">
+                        <input type="number" name="pctInvest" min="0" max="100" class="form-control"
+                               th:value="${data.budgetData.pctInvest}">
+                        <span class="input-group-text">%</span>
+                    </div>
                 </div>
             </div>
 
             <div th:if="${data.budgetData.pctNeeds + data.budgetData.pctWants + data.budgetData.pctInvest != 100}"
-                 class="alert alert-danger">
-                A soma deve dar exatamente 100%. Atualmente está em:
-                <span th:text="${data.budgetData.pctNeeds + data.budgetData.pctWants + data.budgetData.pctInvest}"></span>%
+                 class="alert alert-danger d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>
+                    A soma deve dar exatamente 100%. Atualmente está em:
+                    <strong><span th:text="${data.budgetData.pctNeeds + data.budgetData.pctWants + data.budgetData.pctInvest}"></span>%</strong>
+                </div>
             </div>
 
             <hr>
-            <h3>🗂️ Mapeamento de Categorias</h3>
+            <h3><i class="bi bi-tags"></i> Mapeamento de Categorias</h3>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Estas são Necessidades:</label>
@@ -108,16 +117,16 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary mb-4">Recalcular</button>
+            <button type="submit" class="btn btn-primary mb-4"><i class="bi bi-arrow-repeat"></i> Recalcular</button>
         </form>
 
         <hr>
-        <h3>🌡️ Termômetro do Mês (<span th:text="${data.budgetData.monthName}"></span>)</h3>
+        <h3><i class="bi bi-thermometer-half"></i> Termômetro do Mês (<span th:text="${data.budgetData.monthName}"></span>)</h3>
 
-        <!-- Needs -->
         <div class="mb-4" th:if="${data.budgetData.pctNeeds + data.budgetData.pctWants + data.budgetData.pctInvest == 100}">
             <div>
-                <strong>🏠 Necessidades</strong> (Teto: R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingNeeds, 0, 'COMMA', 2, 'POINT')}"></span>)
+                <strong><i class="bi bi-house"></i> Necessidades</strong>
+                <span class="text-secondary">(Teto: R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingNeeds, 0, 'COMMA', 2, 'POINT')}"></span>)</span>
                 <div class="d-flex align-items-center gap-3 mt-1">
                     <span style="min-width: 80px;"><strong>R$ <span th:text="${#numbers.formatDecimal(data.budgetData.spentNeeds, 0, 'COMMA', 2, 'POINT')}"></span></strong></span>
                     <div class="progress-bar-container flex-grow-1">
@@ -126,13 +135,14 @@
                     </div>
                 </div>
             </div>
-            <div th:if="${data.budgetData.spentNeeds > data.budgetData.ceilingNeeds}" class="alert alert-danger mt-2">
-                Atenção: Você ultrapassou o limite de Necessidades!
+            <div th:if="${data.budgetData.spentNeeds > data.budgetData.ceilingNeeds}" class="alert alert-danger d-flex align-items-center gap-2 mt-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Atenção: Você ultrapassou o limite de Necessidades!</span>
             </div>
 
-            <!-- Wants -->
             <div class="mt-4">
-                <strong>🍿 Desejos e Lazer</strong> (Teto: R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingWants, 0, 'COMMA', 2, 'POINT')}"></span>)
+                <strong><i class="bi bi-tv"></i> Desejos e Lazer</strong>
+                <span class="text-secondary">(Teto: R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingWants, 0, 'COMMA', 2, 'POINT')}"></span>)</span>
                 <div class="d-flex align-items-center gap-3 mt-1">
                     <span style="min-width: 80px;"><strong>R$ <span th:text="${#numbers.formatDecimal(data.budgetData.spentWants, 0, 'COMMA', 2, 'POINT')}"></span></strong></span>
                     <div class="progress-bar-container flex-grow-1">
@@ -141,13 +151,14 @@
                     </div>
                 </div>
             </div>
-            <div th:if="${data.budgetData.spentWants > data.budgetData.ceilingWants}" class="alert alert-danger mt-2">
-                Atenção: Você ultrapassou o limite de Lazer!
+            <div th:if="${data.budgetData.spentWants > data.budgetData.ceilingWants}" class="alert alert-danger d-flex align-items-center gap-2 mt-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Atenção: Você ultrapassou o limite de Lazer!</span>
             </div>
 
-            <!-- Invest -->
             <div class="mt-4">
-                <strong>📈 Investimentos e Poupança</strong> (Teto: R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingInvest, 0, 'COMMA', 2, 'POINT')}"></span>)
+                <strong><i class="bi bi-pie-chart"></i> Investimentos e Poupança</strong>
+                <span class="text-secondary">(Teto: R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingInvest, 0, 'COMMA', 2, 'POINT')}"></span>)</span>
                 <div class="d-flex align-items-center gap-3 mt-1">
                     <span style="min-width: 80px;"><strong>R$ <span th:text="${#numbers.formatDecimal(data.budgetData.spentInvest, 0, 'COMMA', 2, 'POINT')}"></span></strong></span>
                     <div class="progress-bar-container flex-grow-1">
@@ -156,11 +167,13 @@
                     </div>
                 </div>
             </div>
-            <div th:if="${data.budgetData.spentInvest < data.budgetData.ceilingInvest}" class="alert alert-info mt-2">
-                Falta aportar R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingInvest - data.budgetData.spentInvest, 0, 'COMMA', 2, 'POINT')}"></span> para bater a meta deste mês.
+            <div th:if="${data.budgetData.spentInvest < data.budgetData.ceilingInvest}" class="alert alert-info d-flex align-items-center gap-2 mt-2">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>Falta aportar R$ <span th:text="${#numbers.formatDecimal(data.budgetData.ceilingInvest - data.budgetData.spentInvest, 0, 'COMMA', 2, 'POINT')}"></span> para bater a meta deste mês.</span>
             </div>
-            <div th:if="${data.budgetData.spentInvest >= data.budgetData.ceilingInvest}" class="alert alert-success mt-2">
-                Meta de investimentos alcançada! 🎉
+            <div th:if="${data.budgetData.spentInvest >= data.budgetData.ceilingInvest}" class="alert alert-success d-flex align-items-center gap-2 mt-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Meta de investimentos alcançada!</span>
             </div>
         </div>
     </div>

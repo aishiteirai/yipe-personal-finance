@@ -4,9 +4,10 @@
       layout:decorate="~{layout}">
 <body>
 <div layout:fragment="content">
-    <h1>Extrato e Gerenciamento</h1>
+    <h1><i class="bi bi-receipt"></i> Extrato e Gerenciamento</h1>
 
-    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
         <span th:text="${success}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
@@ -15,7 +16,7 @@
     <div class="card mb-4">
         <div class="card-header">
             <a class="btn btn-link text-decoration-none" data-bs-toggle="collapse" href="#filtrosCollapse">
-                🔍 Filtros e Busca de Lançamentos
+                <i class="bi bi-search"></i> Filtros e Busca de Lançamentos
             </a>
         </div>
         <div class="collapse show" id="filtrosCollapse">
@@ -72,8 +73,8 @@
                         </select>
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Filtrar</button>
-                        <a th:href="@{/statement}" class="btn btn-secondary">Limpar</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
+                        <a th:href="@{/statement}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Limpar</a>
                     </div>
                 </form>
             </div>
@@ -82,10 +83,10 @@
 
     <!-- Table -->
     <h3 th:if="${transactions}">
-        📜 Tabela Filtrada (<span th:text="${#lists.size(transactions)}"></span> registros)
+        <i class="bi bi-table"></i> Tabela Filtrada (<span th:text="${#lists.size(transactions)}"></span> registros)
     </h3>
     <div class="table-responsive mb-4" th:if="${not #lists.isEmpty(transactions)}">
-        <table class="table table-dark table-striped">
+        <table class="table">
             <thead>
                 <tr>
                     <th>ID</th><th>Data</th><th>Tipo</th><th>Descrição</th>
@@ -96,7 +97,7 @@
                 <tr th:each="t : ${transactions}">
                     <td th:text="${t.id}"></td>
                     <td th:text="${t.data}"></td>
-                    <td th:text="${t.tipo.displayName}"></td>
+                    <td><span class="badge" th:text="${t.tipo.displayName}"></span></td>
                     <td th:text="${t.descricao}"></td>
                     <td th:text="${t.categoria}"></td>
                     <td th:text="${t.conta}"></td>
@@ -106,24 +107,30 @@
             </tbody>
         </table>
     </div>
-    <p th:if="${#lists.isEmpty(transactions)}" class="text-muted">Nenhum dado registrado.</p>
+    <p th:if="${#lists.isEmpty(transactions)}" class="text-secondary"><i class="bi bi-inbox"></i> Nenhum dado registrado.</p>
 
     <!-- Tools Tabs -->
     <div th:if="${not #lists.isEmpty(transactions)}">
-        <h3>🛠️ Ferramentas de Gerenciamento</h3>
+        <h3><i class="bi bi-tools"></i> Ferramentas de Gerenciamento</h3>
         <ul class="nav nav-tabs" id="toolsTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button">✏️ Editar Único</button>
+                <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button">
+                    <i class="bi bi-pencil"></i> Editar Único
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bulk-tab" data-bs-toggle="tab" data-bs-target="#bulk" type="button">🔄 Edição em Massa</button>
+                <button class="nav-link" id="bulk-tab" data-bs-toggle="tab" data-bs-target="#bulk" type="button">
+                    <i class="bi bi-arrow-repeat"></i> Edição em Massa
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="parc-tab" data-bs-toggle="tab" data-bs-target="#parc" type="button">🗓️ Reestruturar Parcelas</button>
+                <button class="nav-link" id="parc-tab" data-bs-toggle="tab" data-bs-target="#parc" type="button">
+                    <i class="bi bi-calendar-week"></i> Reestruturar Parcelas
+                </button>
             </li>
         </ul>
 
-        <div class="tab-content p-3 border border-top-0 rounded-bottom mb-4">
+        <div class="tab-content mb-4">
             <!-- Tab 1: Edit Single -->
             <div class="tab-pane fade show active" id="edit" role="tabpanel">
                 <form th:action="@{/statement}" method="get" class="row g-3 mb-3">
@@ -136,7 +143,7 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <button type="submit" class="btn btn-outline-primary">Carregar</button>
+                        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-upload"></i> Carregar</button>
                     </div>
                 </form>
 
@@ -181,14 +188,14 @@
                             </select>
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary">💾 Atualizar</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Atualizar</button>
                         </div>
                     </div>
                 </form>
                 <form th:action="@{/statement/{id}/delete(id=${editTransaction.id})}" method="post" class="mt-2"
                       th:if="${editTransaction != null}"
                       onsubmit="return confirm('Excluir este lançamento?')">
-                    <button type="submit" class="btn btn-danger">🗑️ Excluir</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Excluir</button>
                 </form>
             </div>
 
@@ -196,7 +203,7 @@
             <div class="tab-pane fade" id="bulk" role="tabpanel">
                 <form th:action="@{/statement/bulk-update}" method="post">
                     <div class="table-responsive">
-                        <table class="table table-dark table-striped">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" id="selectAll" onchange="toggleCheckboxes(this)"></th>
@@ -231,7 +238,7 @@
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary">⚡ Aplicar</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-lightning-fill"></i> Aplicar</button>
                         </div>
                     </div>
                 </form>
@@ -270,7 +277,7 @@
                                 </select>
                             </div>
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary">🛠️ Reestruturar Parcelamento</button>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-arrow-repeat"></i> Reestruturar Parcelamento</button>
                             </div>
                             <input type="hidden" name="descricao" id="restDesc">
                             <input type="hidden" name="conta" id="restConta">
@@ -278,7 +285,7 @@
                         </div>
                     </form>
                 </div>
-                <p th:if="${#maps.isEmpty(installmentGroups)}" class="text-muted">Nenhuma compra parcelada encontrada.</p>
+                <p th:if="${#maps.isEmpty(installmentGroups)}" class="text-secondary"><i class="bi bi-inbox"></i> Nenhuma compra parcelada encontrada.</p>
             </div>
         </div>
     </div>
