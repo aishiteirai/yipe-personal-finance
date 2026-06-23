@@ -1,4 +1,7 @@
 target/
+__pycache__/
+banco_financeiro.db
+views/
 *.class
 *.jar
 *.war

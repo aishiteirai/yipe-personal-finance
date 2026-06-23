@@ -204,10 +204,10 @@ const COLORS = [
 new Chart(document.getElementById('chartDaily'), {
     type: 'line',
     data: {
-        labels: [/*[[${dias}]]*/],
+        labels: /*[[${dias}]]*/ [],
         datasets: [{
             label: 'Gastos (R$)',
-            data: [/*[[${valoresDiarios}]]*/],
+            data: /*[[${valoresDiarios}]]*/ [],
             borderColor: '#1f77b4',
             backgroundColor: 'rgba(31,119,180,0.1)',
             fill: true,
@@ -221,10 +221,10 @@ new Chart(document.getElementById('chartDaily'), {
 new Chart(document.getElementById('chartCategory'), {
     type: 'bar',
     data: {
-        labels: [/*[[${categorias}]]*/],
+        labels: /*[[${categorias}]]*/ [],
         datasets: [{
             label: 'R$',
-            data: [/*[[${valoresCategoria}]]*/],
+            data: /*[[${valoresCategoria}]]*/ [],
             backgroundColor: COLORS.slice(0, /*[[${#lists.size(categorias)}]]*/),
             borderRadius: 4
         }]
@@ -237,7 +237,7 @@ new Chart(document.getElementById('chartCategory'), {
 });
 
 // Chart 3: Flow Donut
-const sankeyNodes = [/*[[${sankeyNodes}]]*/];
+const sankeyNodes = /*[[${sankeyNodes}]]*/ [];
 const sankeyLinks = /*[[${sankeyLinks}]]*/ || [];
 const flowLabels = [...new Set(sankeyLinks.map(l => l.source))];
 const flowValues = flowLabels.map(src =>
@@ -276,8 +276,8 @@ new Chart(document.getElementById('chartWaterfall'), {
 });
 
 // Chart 5: Radar
-const radarLabels = [/*[[${categorias}]]*/];
-const radarValues = [/*[[${valoresCategoria}]]*/];
+const radarLabels = /*[[${categorias}]]*/ [];
+const radarValues = /*[[${valoresCategoria}]]*/ [];
 new Chart(document.getElementById('chartRadar'), {
     type: 'radar',
     data: {
@@ -296,13 +296,14 @@ new Chart(document.getElementById('chartRadar'), {
 // Chart 6: Yearly Stacked Bar
 const yearly = /*[[${yearlyExpenses}]]*/ || [];
 const catMap = {};
+const mesesAno = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 yearly.forEach(t => {
-    const mes = new Date(t.data[0], t.data[1] - 1, t.data[2]).toLocaleString('pt-BR', { month: 'short' });
+    const parts = t.data.split('-');
+    const mes = mesesAno[parseInt(parts[1]) - 1];
     if (!catMap[t.categoria]) catMap[t.categoria] = {};
     if (!catMap[t.categoria][mes]) catMap[t.categoria][mes] = 0;
     catMap[t.categoria][mes] += t.valor;
 });
-const mesesAno = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const cats = Object.keys(catMap);
 new Chart(document.getElementById('chartYearly'), {
     type: 'bar',

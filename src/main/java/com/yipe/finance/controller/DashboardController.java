@@ -78,13 +78,13 @@ public class DashboardController {
         // --- Chart: Daily evolution ---
         var monthTransacoes = dashboardService.getTransactionsForMonth(anoSelecionado, mesSelecionado);
         var gastosPorDia = dashboardService.getDailyExpenses(monthTransacoes);
-        model.addAttribute("dias", gastosPorDia.keySet());
-        model.addAttribute("valoresDiarios", gastosPorDia.values());
+        model.addAttribute("dias", new ArrayList<>(gastosPorDia.keySet()));
+        model.addAttribute("valoresDiarios", new ArrayList<>(gastosPorDia.values()));
 
         // --- Chart: Expenses by category (bar chart) ---
         var gastosPorCategoria = dashboardService.getExpensesByCategory(monthTransacoes);
-        model.addAttribute("categorias", gastosPorCategoria.keySet());
-        model.addAttribute("valoresCategoria", gastosPorCategoria.values());
+        model.addAttribute("categorias", new ArrayList<>(gastosPorCategoria.keySet()));
+        model.addAttribute("valoresCategoria", new ArrayList<>(gastosPorCategoria.values()));
 
         // --- Chart: Sankey data ---
         var sankeyLinks = dashboardService.getSankeyData(monthTransacoes);
@@ -96,7 +96,7 @@ public class DashboardController {
             allNodes.add((String) link.get("source"));
             allNodes.add((String) link.get("target"));
         }
-        model.addAttribute("sankeyNodes", allNodes);
+        model.addAttribute("sankeyNodes", new ArrayList<>(allNodes));
 
         // --- Chart: Yearly stacked bar ---
         var yearlyExpenses = dashboardService.getYearlyExpenses(anoSelecionado);
