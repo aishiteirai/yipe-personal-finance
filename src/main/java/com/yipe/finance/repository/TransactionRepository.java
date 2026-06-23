@@ -48,6 +48,20 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT t FROM Transaction t WHERE t.conta = :conta AND t.tipo = :tipo ORDER BY t.data")
     List<Transaction> findByContaAndTipo(@Param("conta") String conta, @Param("tipo") TransactionType tipo);
 
+    @Query("SELECT t FROM Transaction t WHERE YEAR(t.data) = :year AND t.tipo NOT IN :exclude AND t.tipo IN :types ORDER BY t.data")
+    List<Transaction> findByYearAndTypes(@Param("year") int year,
+                                          @Param("exclude") List<TransactionType> exclude,
+                                          @Param("types") List<TransactionType> types);
+
+    @Query("SELECT DISTINCT YEAR(t.data) FROM Transaction t ORDER BY YEAR(t.data) DESC")
+    List<Integer> findDistinctYears();
+
+    @Query("SELECT t FROM Transaction t WHERE t.conta = :conta AND t.tipo = :tipo AND YEAR(t.data) = :year AND MONTH(t.data) = :month ORDER BY t.data")
+    List<Transaction> findByContaAndTipoAndPeriod(@Param("conta") String conta,
+                                                   @Param("tipo") TransactionType tipo,
+                                                   @Param("year") int year,
+                                                   @Param("month") int month);
+
     @Query("SELECT t FROM Transaction t WHERE t.parcela LIKE '%/%' ORDER BY t.data")
     List<Transaction> findInstallments();
 

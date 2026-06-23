@@ -3,6 +3,7 @@ package com.yipe.finance.service;
 import com.yipe.finance.dto.TransactionDTO;
 import com.yipe.finance.entity.Transaction;
 import com.yipe.finance.entity.TransactionType;
+import com.yipe.finance.mapper.TransactionMapper;
 import com.yipe.finance.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,11 @@ import java.util.stream.Collectors;
 public class TransactionService {
 
     private final TransactionRepository repository;
+    private final TransactionMapper mapper;
 
-    public TransactionService(TransactionRepository repository) {
+    public TransactionService(TransactionRepository repository, TransactionMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Transactional
@@ -27,8 +30,7 @@ public class TransactionService {
         if (dto.isRecorrente() && dto.getQtdMeses() > 1) {
             createRecurring(dto);
         } else {
-            Transaction t = new Transaction();
-            applyDto(t, dto);
+            Transaction t = mapper.toEntity(dto);
             t.setParcela("Única");
             t.setValor(dto.getValor());
             repository.save(t);
@@ -46,8 +48,7 @@ public class TransactionService {
 
         List<Transaction> transactions = new ArrayList<>();
         for (int i = 0; i < months; i++) {
-            Transaction t = new Transaction();
-            applyDto(t, dto);
+            Transaction t = mapper.toEntity(dto);
             t.setData(dto.getData().plusMonths(i));
             t.setValor(installmentValue);
 
@@ -60,14 +61,6 @@ public class TransactionService {
             transactions.add(t);
         }
         repository.saveAll(transactions);
-    }
-
-    private void applyDto(Transaction t, TransactionDTO dto) {
-        t.setData(dto.getData());
-        t.setTipo(dto.getTipo());
-        t.setDescricao(dto.getDescricao());
-        t.setConta(dto.getConta());
-        t.setCategoria(dto.getCategoria());
     }
 
     public List<Transaction> findFiltered(Integer year, Integer month, Integer day,
@@ -153,5 +146,9 @@ public class TransactionService {
 
     public List<Transaction> findAll() {
         return repository.findAll();
+    }
+
+    public List<Integer> findDistinctYears() {
+        return repository.findDistinctYears();
     }
 }

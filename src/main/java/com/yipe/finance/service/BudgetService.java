@@ -88,13 +88,10 @@ public class BudgetService {
     }
 
     public List<Integer> getAvailableYears() {
-        List<Integer> years = transactionRepository.findAll().stream()
-                .map(t -> t.getData().getYear())
-                .distinct()
-                .sorted(Collections.reverseOrder())
-                .collect(Collectors.toList());
+        List<Integer> years = transactionRepository.findDistinctYears();
         int currentYear = LocalDate.now().getYear();
         if (!years.contains(currentYear)) {
+            years = new ArrayList<>(years);
             years.add(0, currentYear);
         }
         return years;

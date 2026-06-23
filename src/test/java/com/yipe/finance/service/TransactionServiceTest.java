@@ -3,6 +3,7 @@ package com.yipe.finance.service;
 import com.yipe.finance.dto.TransactionDTO;
 import com.yipe.finance.entity.Transaction;
 import com.yipe.finance.entity.TransactionType;
+import com.yipe.finance.mapper.TransactionMapper;
 import com.yipe.finance.repository.TransactionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,11 +23,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.mockito.stubbing.Answer;
+
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TransactionServiceTest {
 
     @Mock
     TransactionRepository repository;
+
+    @Mock
+    TransactionMapper mapper;
 
     @InjectMocks
     TransactionService service;
@@ -36,6 +46,22 @@ class TransactionServiceTest {
 
     @Captor
     ArgumentCaptor<List<Transaction>> listCaptor;
+
+    @BeforeEach
+    void setUp() {
+        when(mapper.toEntity(any(TransactionDTO.class))).thenAnswer(
+                (Answer<Transaction>) invocation -> {
+                    TransactionDTO dto = invocation.getArgument(0);
+                    Transaction t = new Transaction();
+                    t.setData(dto.getData());
+                    t.setTipo(dto.getTipo());
+                    t.setDescricao(dto.getDescricao());
+                    t.setConta(dto.getConta());
+                    t.setCategoria(dto.getCategoria());
+                    return t;
+                }
+        );
+    }
 
     @Test
     @DisplayName("should save single transaction when not recurring")
