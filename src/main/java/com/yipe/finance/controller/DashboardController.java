@@ -28,28 +28,17 @@ public class DashboardController {
         model.addAttribute("activePage", "dashboard");
 
         // --- Overall totals ---
-        BigDecimal entradasTotais = dashboardService.sumByTypes(
-                List.of(TransactionType.INCOME, TransactionType.ADJUSTMENT_INCOME));
-        BigDecimal saidasTotais = dashboardService.sumByTypes(
-                List.of(TransactionType.DEBIT, TransactionType.VR, TransactionType.ADJUSTMENT_EXPENSE));
+        BigDecimal saldoGeral = dashboardService.computeSaldoGeral();
         BigDecimal investimentosTotais = dashboardService.sumByTypes(
                 List.of(TransactionType.INVESTMENT, TransactionType.RESERVE));
-        BigDecimal saldoGeral = entradasTotais.subtract(saidasTotais).subtract(investimentosTotais);
 
         model.addAttribute("saldoGeral", saldoGeral);
         model.addAttribute("totalInvestido", investimentosTotais);
 
         // --- Today's snapshot ---
         var hojeTransacoes = dashboardService.getTodayTransactions();
-        BigDecimal gastoCredHoje = hojeTransacoes.stream()
-                .filter(t -> t.getTipo() == TransactionType.CREDIT)
-                .map(t -> t.getValor()).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal gastoDebHoje = hojeTransacoes.stream()
-                .filter(t -> t.getTipo() == TransactionType.DEBIT || t.getTipo() == TransactionType.VR)
-                .map(t -> t.getValor()).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        model.addAttribute("gastoCredHoje", gastoCredHoje);
-        model.addAttribute("gastoDebHoje", gastoDebHoje);
+        model.addAttribute("gastoCredHoje", dashboardService.computeGastoCreditoHoje(hojeTransacoes));
+        model.addAttribute("gastoDebHoje", dashboardService.computeGastoDebitoHoje(hojeTransacoes));
         model.addAttribute("saldoHoje", saldoGeral);
 
         // --- Monthly data ---
@@ -90,7 +79,6 @@ public class DashboardController {
         var sankeyLinks = dashboardService.getSankeyData(monthTransacoes);
         model.addAttribute("sankeyLinks", sankeyLinks);
 
-        // Collect unique nodes for sankey
         Set<String> allNodes = new LinkedHashSet<>();
         for (var link : sankeyLinks) {
             allNodes.add((String) link.get("source"));

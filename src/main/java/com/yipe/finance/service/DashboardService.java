@@ -36,6 +36,27 @@ public class DashboardService {
         return repository.findByData(LocalDate.now());
     }
 
+    public BigDecimal computeSaldoGeral() {
+        BigDecimal entradas = sumByTypes(List.of(TransactionType.INCOME, TransactionType.ADJUSTMENT_INCOME));
+        BigDecimal saidas = sumByTypes(List.of(TransactionType.DEBIT, TransactionType.VR, TransactionType.ADJUSTMENT_EXPENSE));
+        BigDecimal investimentos = sumByTypes(List.of(TransactionType.INVESTMENT, TransactionType.RESERVE));
+        return entradas.subtract(saidas).subtract(investimentos);
+    }
+
+    public BigDecimal computeGastoCreditoHoje(List<Transaction> hojeTransacoes) {
+        return hojeTransacoes.stream()
+                .filter(t -> t.getTipo() == TransactionType.CREDIT)
+                .map(Transaction::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal computeGastoDebitoHoje(List<Transaction> hojeTransacoes) {
+        return hojeTransacoes.stream()
+                .filter(t -> t.getTipo() == TransactionType.DEBIT || t.getTipo() == TransactionType.VR)
+                .map(Transaction::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     public Map<Integer, BigDecimal> getDailyExpenses(List<Transaction> transactions) {
         return transactions.stream()
                 .filter(t -> t.getTipo() == TransactionType.DEBIT
@@ -97,13 +118,9 @@ public class DashboardService {
     }
 
     public List<Transaction> getYearlyExpenses(int year) {
-        return repository.findAll().stream()
-                .filter(t -> t.getData().getYear() == year)
-                .filter(t -> t.getTipo() != TransactionType.ADJUSTMENT_INCOME
-                        && t.getTipo() != TransactionType.ADJUSTMENT_EXPENSE)
-                .filter(t -> t.getTipo() == TransactionType.DEBIT
-                        || t.getTipo() == TransactionType.CREDIT
-                        || t.getTipo() == TransactionType.VR)
-                .collect(Collectors.toList());
+        return repository.findByYearAndTypes(year,
+                List.of(TransactionType.ADJUSTMENT_INCOME, TransactionType.ADJUSTMENT_EXPENSE,
+                        TransactionType.INCOME, TransactionType.INVESTMENT, TransactionType.RESERVE),
+                List.of(TransactionType.DEBIT, TransactionType.CREDIT, TransactionType.VR));
     }
 }

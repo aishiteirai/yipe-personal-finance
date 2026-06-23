@@ -52,9 +52,7 @@ public class StatementController {
         model.addAttribute("filtroTipo", tipo);
         model.addAttribute("filtroCategoria", categoria);
 
-        List<Transaction> allTransactions = service.findAll();
-        model.addAttribute("availableYears",
-                allTransactions.stream().map(t -> t.getData().getYear()).distinct().sorted().toList());
+        model.addAttribute("availableYears", service.findDistinctYears());
 
         model.addAttribute("allTipos", TransactionType.values());
         model.addAttribute("allContas", accountRepository.findAll());

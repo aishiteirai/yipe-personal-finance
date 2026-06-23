@@ -9,6 +9,7 @@ import com.yipe.finance.repository.CardRepository;
 import com.yipe.finance.repository.CategoryRepository;
 import com.yipe.finance.repository.SalaryRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -60,6 +61,7 @@ public class SettingsController {
         return "settings";
     }
 
+    @Transactional
     @PostMapping("/cards/save")
     public String saveCard(@RequestParam String nome,
                            @RequestParam String banco,
@@ -82,6 +84,7 @@ public class SettingsController {
         return "redirect:/settings#cards";
     }
 
+    @Transactional
     @PostMapping("/accounts/save")
     public String saveAccount(@RequestParam String nome,
                               @RequestParam String tipo,
@@ -102,6 +105,7 @@ public class SettingsController {
         return "redirect:/settings#accounts";
     }
 
+    @Transactional
     @PostMapping("/categories/save")
     public String saveCategory(@RequestParam String nome,
                                @RequestParam(defaultValue = "") String originalNome,

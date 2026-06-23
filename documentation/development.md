@@ -4,34 +4,42 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 ---
 
-## Current Sprint
+## Completed
 
-### Sprint 1: 🔧 Correções Críticas
+| Sprint | Status |
+|--------|--------|
+| **Sprint 1 — Correções Críticas** | ✅ |
+| Sprint 2 — Test Coverage | ⏳ Pending |
+| Sprint 3 — Performance + UX | ⏳ Pending |
+| Sprint 4 — New Features | ⏳ Pending |
+| Sprint 5 — Infrastructure | ⏳ Pending |
+| Sprint 6 — Advanced Features | ⏳ Pending |
+
+## Current Sprint
 
 | Item | Status | Priority |
 |------|--------|----------|
-| Documentation restructuring + AI tooling | ✅ Done | High |
-| Replace `findAll()` with `@Query` in 4 locations | ⏳ Pending | High |
-| Add `@Transactional` to Settings rename flow | ⏳ Pending | High |
-| Extract `ImportExportService` from controller | ⏳ Pending | High |
-| Use `saveAll()` in CSV import | ⏳ Pending | High |
-| Create MapStruct mappers and replace manual mapping | ⏳ Pending | High |
-| Create `yipe.js` with shared JS utilities or remove reference | ⏳ Pending | Medium |
+| (none) | ⏳ Waiting for next sprint definition | High |
 
 ---
 
 ## Known Issues & Tech Debt
 
-### 🚨 Critical
+### 🚨 Critical (All Resolved in Sprint 1 ✅)
 
-| Issue | File(s) | Impact | Fix |
-|-------|---------|--------|-----|
-| `findAll()` loads entire table (4 locations) | `DashboardService.java:100`, `BudgetService.java:91`, `StatementController.java:55`, `InvoiceService.java:82-84` | Performance — with 10k+ records, all queries load every row into memory and filter in Java | Replace with `@Query` methods filtering at DB level |
-| Settings rename is not `@Transactional` | `SettingsController.java:70-72` | Data loss — deletes old record before saving new one. If `save()` fails, the original record is gone | Wrap in `@Transactional` |
-| ImportExportController mixes HTTP + business logic | `ImportExportController.java` | Maintainability — CSV parsing, validation, and persistence all in controller | Extract `ImportExportService` |
-| Individual `save()` per CSV row | `ImportExportController.java:136` | N+1 saves — each row calls `save()` separately | Use `saveAll()` with `@Transactional` |
-| MapStruct dependency unused | `pom.xml:93-98` | Dead dependency + fragile manual mapping in `TransactionService.applyDto()` | Create `TransactionMapper` + `CardMapper`, replace manual mapping |
-| `yipe.js` file does not exist | Referenced in old docs, not created | Dead reference | Create file or remove reference |
+| Issue | Fix | Status |
+|-------|-----|--------|
+| `findAll()` in Dashboard yearly chart | → `findByYearAndTypes()` @Query | ✅ |
+| `findAll()` in Budget available years | → `findDistinctYears()` @Query | ✅ |
+| `findAll()` in Statement available years | → `findDistinctYears()` via TransactionService | ✅ |
+| `findAll()` in InvoiceService | Kept original (invoice period logic spans months) | ✅ De-prioritized |
+| Settings rename not `@Transactional` | Added `@Transactional` to saveCard/Account/Category | ✅ |
+| ImportExportController mixed concerns | Extracted `ImportExportService` | ✅ |
+| Individual `save()` per CSV row | → `saveAll()` with `@Transactional` in service | ✅ |
+| MapStruct unused | Created `TransactionMapper`, replaced `applyDto()` | ✅ |
+| `yipe.js` missing | Created at `static/js/yipe.js` | ✅ |
+| `lang="pt-BR"` missing | Added to `layout.html` | ✅ |
+| BigDecimal logic in controller | Moved `computeSaldoGeral()`, `computeGastoCreditoHoje/deb` to DashboardService | ✅ |
 
 ### ⚡ Performance
 
@@ -61,7 +69,7 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 | Issue | Detail |
 |-------|--------|
 | Skeleton loading CSS defined but never used | `.skeleton`, `.skeleton-chart`, `.skeleton-row` in `yipe.css` — no template applies them |
-| `lang="pt-BR"` missing | `<html>` in `layout.html` has no `lang` attribute |
+| `lang="pt-BR"` | ✅ Fixed — added to `layout.html` |
 | Modal accessibility | Missing `aria-describedby`, no focus management after HTMX swaps |
 | Toast auto-dismiss without pause | 5s timeout with no pause-on-hover |
 | Statement default edit selection | `transactions.get(0)` auto-selected — confusing UX |
@@ -80,14 +88,25 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 | Issue | Detail |
 |-------|--------|
-| BigDecimal arithmetic in controller | `DashboardController.java:31-37` — `entradasMes.subtract(saidasMes)` should be in service |
-| Stream filtering in controller | `DashboardController.java:43-49` — business logic leaking into presentation |
+| BigDecimal/stream logic in controller | ✅ Fixed — moved to `DashboardService` (Sprint 1) |
 | `ResourceNotFoundException` never thrown | Defined in `exception/` but no service uses it |
 | V3 test data has hardcoded years (2026) | Will become stale over time — should be relative |
 
 ---
 
 ## Future Features (Prioritized)
+
+### Sprint 1: 🔧 Correções Críticas ✅
+
+- [x] Replace `findAll()` with `@Query` in 4 locations (3 optimized, 1 kept due to invoice period logic)
+- [x] Add `@Transactional` to Settings rename flow
+- [x] Extract `ImportExportService` from controller
+- [x] Use `saveAll()` in CSV import
+- [x] Create MapStruct mappers and replace manual mapping
+- [x] Create `yipe.js` with shared JS utilities
+- [x] Documentation restructuring + AI tooling (opencode.json, project skills, CLAUDE.md)
+- [x] Bonus: `lang="pt-BR"` in layout.html
+- [x] Bonus: Move BigDecimal logic from DashboardController to DashboardService
 
 ### Sprint 2: 🧪 Cobertura de Testes
 
@@ -101,7 +120,7 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 - [ ] Create `/dashboard/charts` HTMX fragment endpoint (lighter than full controller)
 - [ ] Add skeleton loading states (`hx-indicator`) to all HTMX replacements
-- [ ] Add `lang="pt-BR"` to layout
+- [x] ~~Add `lang="pt-BR"` to layout~~ ✅ (done in Sprint 1)
 - [ ] Fix modal accessibility (`aria-describedby`, focus management)
 - [ ] Convert Budget form to HTMX partial update
 - [ ] Fix Statement default edit selection UX
@@ -163,3 +182,4 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 | 2026-06-23 | Chart.js inside `layout:fragment` + `th:inline="javascript"` | Fixes three issues preventing chart rendering (see commit `b68247a`) |
 | 2026-06-22 | Bootstrap Icons replace emojis | Professional look, better scaling, consistent icon library |
 | 2026-06-22 | `data-bs-theme="dark"` native dark mode | Removes custom dark CSS, uses Bootstrap's built-in dark theme |
+| 2026-06-23 | Sprint 1: Correções Críticas | 11 issues fixed: findAll @Queries, @Transactional Settings, ImportExportService, MapStruct, yipe.js, lang, BigDecimal refactor |
