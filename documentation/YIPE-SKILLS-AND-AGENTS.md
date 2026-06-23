@@ -332,12 +332,78 @@ migration. Each phase should produce well-structured commits.
 
 ---
 
+## Project-Specific Skills (New)
+
+These skills live in `.opencode/skills/` and teach the AI YIPE-specific patterns
+that community skills don't cover. They auto-load when the AI detects relevant tasks.
+
+### 20. yipe-htmx
+
+HTMX interaction patterns specific to YIPE templates.
+
+**Key topics:**
+- Fragment endpoints (return `String` template path, never `@ResponseBody`)
+- CSRF handling with HTMX forms (`th:action` or hidden `_csrf`)
+- 3 concrete patterns: filtered table, inline edit, chart refresh
+- Loading states with `hx-indicator` and skeleton CSS classes
+
+### 21. yipe-entity
+
+JPA entity conventions specific to YIPE.
+
+**Key topics:**
+- Portuguese field names table (`nome`, `data`, `valor`, `tipo`, etc.)
+- `@Entity` + `@Table` conventions (English plural table names)
+- MapStruct mapper pattern (`componentModel = "spring"`)
+- Jakarta Validation annotations
+
+### 22. yipe-controller
+
+Controller conventions specific to YIPE.
+
+**Key topics:**
+- `@Controller` vs `@RestController` (always `@Controller`)
+- `ModelAndView` for full pages, `String` for HTMX fragments
+- `@Valid` + `BindingResult` form validation pattern
+- Error handling with `GlobalExceptionHandler`
+
+### 23. yipe-migration
+
+Flyway migration conventions specific to YIPE.
+
+**Key topics:**
+- Version numbering (always check next, never modify existing)
+- SQL conventions (Portuguese columns, DECIMAL for money, BIGINT for ID)
+- Seed data pattern with `INSERT INTO`
+- Safety rules (no DROP, ALTER over destructive changes)
+
+### 24. yipe-security
+
+Spring Security configuration for YIPE's single-user setup.
+
+**Key topics:**
+- `SecurityFilterChain` with form login
+- CSRF protection (enabled by default, forms need token)
+- `InMemoryUserDetailsManager` for dev, JDBC/JPA for prod
+- Production checklist (env vars, HTTPS, session persistence)
+
+### 25. yipe-test-data
+
+Test data seeding patterns for YIPE.
+
+**Key topics:**
+- `DataInitializer` pattern with `@Profile("dev")` guard
+- Standard seed data for categories, accounts, cards, salaries
+- Multi-month transaction test data with all types
+- Relative dates (`LocalDate.now()`) to avoid hardcoded years
+
+---
+
 ## Custom Agents (Created for YIPE)
 
 These agents are defined in `.opencode/agents/` as Markdown files. They are
 project-specific and should be committed to Git so all contributors can
-use them. Invoke them with `@yipe-scaffold` or `@yipe-test-gen` in any
-OpenCode conversation.
+use them. Invoke with `@name` in any OpenCode conversation.
 
 ### 20. @yipe-scaffold
 
@@ -376,13 +442,35 @@ When you invoke `@yipe-test-gen for TransactionService`, it generates:
 4. Integration test (`TransactionIntegrationTest.java`) with `@SpringBootTest`
 
 Each test follows the AAA pattern with `@DisplayName`, AssertJ assertions,
-and Mockito verifications. Edge cases and exception paths are included.
+`@Nested` for method grouping, and Mockito verifications. Edge cases and
+exception paths are included.
 
 **Why created:** Phase 12 of the migration is testing. The project currently
 has <5 test files. This agent dramatically accelerates test coverage.
 
 **Invocation:** `@yipe-test-gen for <ClassName>`
 - Example: `@yipe-test-gen for InvoiceService`
+
+---
+
+### 22. @yipe-fix
+
+**Type:** Subagent
+**Purpose:** Diagnoses and fixes bugs using the known issues in development.md.
+
+When you invoke `@yipe-fix the Settings rename is missing @Transactional`, it:
+1. Reads `development.md` for the known issue and expected fix
+2. Reads the affected files to understand the code
+3. Implements the minimal fix following project conventions
+4. Verifies with `mvn compile -q` and `mvn test -q`
+
+**Why created:** The project has 30+ known issues across critical, performance,
+test, UX, security, and architecture categories. This agent automates the
+diagnose-fix-verify cycle using the roadmap as a source of truth.
+
+**Invocation:** `@yipe-fix <description of bug>`
+- Reads `development.md` to find the matching known issue
+- Example: `@yipe-fix findAll loads entire table in DashboardService`
 
 ---
 
@@ -455,11 +543,23 @@ stop caveman
 └── spring-boot-engineer/      # synapse-ai-hub
 ```
 
+### Skills (Project-specific)
+```
+.opencode/skills/
+├── yipe-htmx/                 # HTMX fragment patterns
+├── yipe-entity/               # JPA entity conventions
+├── yipe-controller/           # Controller patterns
+├── yipe-migration/            # Flyway migration conventions
+├── yipe-security/             # Spring Security setup
+└── yipe-test-data/            # Test data seeding
+```
+
 ### Agents (Project-specific)
 ```
 .opencode/agents/
-├── yipe-scaffold.md
-└── yipe-test-gen.md
+├── yipe-scaffold.md           # Scaffold CRUD modules
+├── yipe-test-gen.md           # Generate tests
+└── yipe-fix.md                # Fix bugs from roadmap
 ```
 
 ### Other Config

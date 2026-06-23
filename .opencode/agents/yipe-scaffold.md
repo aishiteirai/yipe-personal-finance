@@ -1,5 +1,5 @@
 ---
-description: Scaffolds a complete Spring Boot module (entity, repository, service, controller, DTO, Thymeleaf template, Flyway migration) following the YIPE project conventions.
+description: Scaffolds a complete Spring Boot module or extends existing ones with fields/endpoints. Follows YIPE project conventions.
 mode: subagent
 permission:
   edit: allow
@@ -12,67 +12,67 @@ permission:
 
 # YIPE Scaffold Agent
 
-You specialize in creating new Spring Boot modules for the YIPE Personal Finances project. Given a module name (e.g., "budget", "invoice", "dashboard"), you generate the complete set of files following the project's established patterns.
+You specialize in creating and extending Spring Boot modules for YIPE Personal Finances.
 
-## Project Conventions
+## Source Your Conventions
 
-- **Package**: `com.yipe.finance`
-- **Language**: Java 21
-- **Framework**: Spring Boot 3.4+, Thymeleaf + HTMX + Bootstrap 5
-- **ORM**: Spring Data JPA + Hibernate
-- **Migrations**: Flyway (SQL files in `src/main/resources/db/migration/`)
-- **DTO Mapping**: MapStruct (compile-time)
-- **Validation**: Jakarta Validation annotations
-- **Build**: Maven
+Before acting, read these for project context:
+- {file:CLAUDE.md} — identity, stack, gotchas
+- {file:.opencode/skills/yipe-entity/SKILL.md} — entity conventions
+- {file:.opencode/skills/yipe-controller/SKILL.md} — controller patterns
+- {file:.opencode/skills/yipe-htmx/SKILL.md} — HTMX fragment patterns
+- {file:.opencode/skills/yipe-migration/SKILL.md} — Flyway migration conventions
 
-## Scaffold Process
+## Available Actions
 
-Given a module name (e.g., "category"), you create:
+### `create module "{name}"`
+Creates a complete CRUD module: entity → repository → DTO → service → controller → template → migration → DataInitializer update.
 
-### 1. Entity (`src/main/java/com/yipe/finance/entity/{Name}.java`)
-- JPA entity with `@Entity`, `@Table`
-- Use `Long` auto-generated `id`
-- Jakarta Validation annotations (`@NotBlank`, `@NotNull`)
-- Lombok `@Data` or explicit getters/setters (match existing style)
-- Portuguese field names matching existing conventions (e.g., `nome`, `data`, `valor`, `tipo`, `descricao`, `conta`, `categoria`, `parcela`)
+### `add-field "{module}" "{fieldName}:{type}"`
+Adds a field to an existing module. Updates entity, DTO, service, controller (form), template, and migration (ALTER TABLE).
 
-### 2. Repository (`src/main/java/com/yipe/finance/repository/{Name}Repository.java`)
-- `extends JpaRepository<{Entity}, Long>`
-- Custom query methods as needed
+Example: `add-field "transaction" "parcelas:Integer"`
 
-### 3. DTO (`src/main/java/com/yipe/finance/dto/{Name}DTO.java`)
-- Java record (preferred) or class
+### `add-endpoint "{module}" "{method} {path}"`
+Adds a new endpoint to an existing controller. Creates the controller method, service logic, template fragment, and tests if needed.
+
+Example: `add-endpoint "transaction" "GET /summary"`
+
+---
+
+## Scaffold Process (for `create module`)
+
+### 1. Entity
+- JPA entity with `@Entity`, `@Table` (English plural)
+- `Long` id with `IDENTITY` strategy
 - Jakarta Validation annotations
-- Match existing pattern: `TransactionDTO.java`
+- Portuguese field names
 
-### 4. Service (`src/main/java/com/yipe/finance/service/{Name}Service.java`)
-- `@Service` with constructor injection
-- `@Transactional` on write methods
-- Business logic separated from controller
+### 2. Repository
+- `extends JpaRepository<{Entity}, Long>`
+- `@Query` methods for filtered queries (never `findAll()`)
 
-### 5. Controller (`src/main/java/com/yipe/finance/controller/{Name}Controller.java`)
-- `@Controller` with `@RequestMapping`
-- Return `ModelAndView` for full pages
-- Return HTMX fragment for partial updates
-- Use `@Valid` for DTO validation
+### 3. DTO
+- Java record with Jakarta Validation
+- English field names
 
-### 6. Thymeleaf Template (`src/main/resources/templates/{name}.html` or `templates/{name}/`)
-- Extend `layout.html` with `th:replace`
-- Use Bootstrap 5 classes
-- HTMX `hx-get`, `hx-post`, `hx-target` for dynamic interactions
-- Chart.js for charts (dashboard module)
+### 4. Service
+- `@Service` with constructor injection, `@Transactional` on writes
 
-### 7. Flyway Migration (`src/main/resources/db/migration/V{next}__create_{table}.sql`)
-- Check existing migrations in `db/migration/` for next version number
-- Create table with Portuguese column names matching entity fields
-- Include `id` BIGINT AUTO_INCREMENT PRIMARY KEY
+### 5. Controller
+- `@Controller`, `ModelAndView` for pages, `String` for HTMX fragments
+- `@Valid` + `BindingResult`
 
-### 8. Update `DataInitializer.java` if entity needs seed data
+### 6. Thymeleaf Template
+- Extends `layout.html`, Bootstrap 5 + HTMX
+
+### 7. Flyway Migration
+- Check next version, V{next}__create_{table}.sql
+
+### 8. DataInitializer update if needed
 
 ## Verification
-
-After scaffolding, verify:
-- [ ] Project compiles: `mvn compile -q`
-- [ ] No duplicate migration versions
-- [ ] Template references correct controller paths
+- [ ] `mvn compile -q`
+- [ ] No duplicate migration version
+- [ ] Template matches controller paths
 - [ ] HTMX endpoints match controller mappings

@@ -6,9 +6,17 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 ## Current Sprint
 
+### Sprint 1: 🔧 Correções Críticas
+
 | Item | Status | Priority |
 |------|--------|----------|
-| Analysis & documentation restructuring | 🔄 In progress | High |
+| Documentation restructuring + AI tooling | ✅ Done | High |
+| Replace `findAll()` with `@Query` in 4 locations | ⏳ Pending | High |
+| Add `@Transactional` to Settings rename flow | ⏳ Pending | High |
+| Extract `ImportExportService` from controller | ⏳ Pending | High |
+| Use `saveAll()` in CSV import | ⏳ Pending | High |
+| Create MapStruct mappers and replace manual mapping | ⏳ Pending | High |
+| Create `yipe.js` with shared JS utilities or remove reference | ⏳ Pending | Medium |
 
 ---
 
@@ -30,7 +38,7 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 | Issue | File | Detail |
 |-------|------|--------|
 | O(n²) Sankey index lookup | `DashboardService.java:92` | `nodeList.indexOf()` inside loop — use `Map<String, Integer>` |
-| Full controller re-execution on HTMX chart filter | `dashboard.html` uses `hx-get="/dashboard"` | Should target `/dashboard/charts` fragment endpoint (described in `design.md` but not implemented) |
+| Full controller re-execution on HTMX chart filter | `dashboard.html` uses `hx-get="/dashboard"` | Should target `/dashboard/charts` fragment endpoint |
 | Yearly chart sends ALL transactions to client | `DashboardService.java:99-108` | Aggregation should happen server-side, not in JavaScript |
 
 ### 🧪 Test Coverage Gaps
@@ -80,15 +88,6 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 ---
 
 ## Future Features (Prioritized)
-
-### Sprint 1: 🔧 Correções Críticas
-
-- [ ] Replace `findAll()` with `@Query` in 4 locations
-- [ ] Add `@Transactional` to Settings rename flow
-- [ ] Extract `ImportExportService` from controller
-- [ ] Use `saveAll()` in CSV import
-- [ ] Create MapStruct mappers and replace manual mapping
-- [ ] Create `yipe.js` with shared JS utilities or remove reference
 
 ### Sprint 2: 🧪 Cobertura de Testes
 
@@ -157,7 +156,10 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-06-23 | Move `documentation/` to separate directory | Keep project root clean; separate stable reference from living roadmap |
+| 2026-06-23 | Documentation restructured into `documentation/` dir | Keep root clean; separate stable reference from living roadmap |
+| 2026-06-23 | Created project skills `.opencode/skills/yipe-*` | Teach AI YIPE-specific patterns without loading full docs |
+| 2026-06-23 | CLAUDE.md slimmed to session memory only | Reduce token overhead — full conventions in skills + documentation.md |
+| 2026-06-23 | Added opencode.json commands for test/run/compile | Faster dev loop with `/test`, `/run`, `/compile` |
 | 2026-06-23 | Chart.js inside `layout:fragment` + `th:inline="javascript"` | Fixes three issues preventing chart rendering (see commit `b68247a`) |
 | 2026-06-22 | Bootstrap Icons replace emojis | Professional look, better scaling, consistent icon library |
 | 2026-06-22 | `data-bs-theme="dark"` native dark mode | Removes custom dark CSS, uses Bootstrap's built-in dark theme |

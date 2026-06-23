@@ -7,6 +7,24 @@
     "documentation/design.md",
     "documentation/YIPE-SKILLS-AND-AGENTS.md"
   ],
+  "command": {
+    "test": {
+      "template": "Run mvn test and show results. Focus on failures and suggest fixes.",
+      "description": "Run full test suite with Maven"
+    },
+    "run": {
+      "template": "Run mvn spring-boot:run -Dspring-boot.run.profiles=dev in the background and show the startup log until the app is ready.",
+      "description": "Start dev server with Spring Boot"
+    },
+    "compile": {
+      "template": "Run mvn compile -q and report any compilation errors with file paths and suggestions.",
+      "description": "Fast compile check"
+    },
+    "testc": {
+      "template": "Run mvn test-compile -q and report any test compilation errors.",
+      "description": "Fast test compile check"
+    }
+  },
   "agent": {
     "plan": {
       "mode": "primary",
@@ -45,11 +63,6 @@
         "grep": "allow",
         "list": "allow"
       }
-    }
-  },
-  "permission": {
-    "skill": {
-      "*": "allow"
     }
   }
 }
