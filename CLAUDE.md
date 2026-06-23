@@ -20,6 +20,7 @@ All 13 migration phases complete. 29 source, 5 test files. Now entering maintena
 ## Agents
 - `@yipe-scaffold create module "name"` — full CRUD module
 - `@yipe-test-gen for ClassName` — tests (unit + slice + integration)
+- `@yipe-fix <description>` — fix bugs from development.md roadmap
 
 ## Common Gotchas
 - MapStruct: `componentModel = "spring"` in `@Mapper`, constructor-inject the mapper
