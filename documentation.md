@@ -170,7 +170,9 @@ yipe-personal-finances/
 │   │   │       ├── invoices.html
 │   │   │       ├── budget.html
 │   │   │       ├── settings.html
-│   │   │       └── import-export.html
+│   │   │       ├── import-export.html
+│   │   │       ├── login.html
+│   │   │       └── error.html
 │   └── test/
 │       └── java/com/yipe/finance/
 │           ├── YipeApplicationTests.java
@@ -525,7 +527,7 @@ Available globally: `cavecrew` (subagent delegation), `caveman` (token compressi
 | **Phase 7** | ✅ Done | Invoice module (credit card bill calculation) |
 | **Phase 8** | ✅ Done | Budget module (rule sliders, category mapping, progress bars) |
 | **Phase 9** | ✅ Done | Settings module (CRUD tables for cards/accounts/categories/salaries) |
-| **Phase 10** | 🔄 In progress | Import/Export module (CSV) |
-| **Phase 11** | ⚠️ Partial | Security (Spring Security, login page — config exists, permissive) |
-| **Phase 12** | ❌ Not started | Testing (unit + integration) |
-| **Phase 13** | ❌ Not started | Polish (error handling, validation, edge cases, DTOs, mappers) |
+| **Phase 10** | ✅ Done | Import/Export module (CSV) |
+| **Phase 11** | ✅ Done | Security (Spring Security, form login, logout) |
+| **Phase 12** | ✅ Done | Testing (unit + web slice tests, 25 tests) |
+| **Phase 13** | ✅ Done | Polish (exception handler, error page, form validation feedback, edge cases) |

@@ -14,24 +14,32 @@
     <form th:action="@{/transactions}" th:object="${dto}" method="post" class="row g-3">
         <div class="col-md-6">
             <label class="form-label">Tipo de Movimentação</label>
-            <select th:field="*{tipo}" class="form-select" id="tipoSelect" onchange="onTipoChange()">
+            <select th:field="*{tipo}" class="form-select" id="tipoSelect" onchange="onTipoChange()"
+                    th:classappend="${#fields.hasErrors('tipo')} ? 'is-invalid' : ''">
                 <option th:each="t : ${tipos}" th:value="${t}" th:text="${t.displayName}"></option>
             </select>
+            <div class="invalid-feedback" th:errors="*{tipo}"></div>
         </div>
 
         <div class="col-md-6">
             <label class="form-label">Valor (R$)</label>
-            <input type="number" step="0.01" min="0" th:field="*{valor}" class="form-control" required>
+            <input type="number" step="0.01" min="0" th:field="*{valor}" class="form-control" required
+                   th:classappend="${#fields.hasErrors('valor')} ? 'is-invalid' : ''">
+            <div class="invalid-feedback" th:errors="*{valor}"></div>
         </div>
 
         <div class="col-md-6">
             <label class="form-label">Data</label>
-            <input type="date" th:field="*{data}" class="form-control" required>
+            <input type="date" th:field="*{data}" class="form-control" required
+                   th:classappend="${#fields.hasErrors('data')} ? 'is-invalid' : ''">
+            <div class="invalid-feedback" th:errors="*{data}"></div>
         </div>
 
         <div class="col-md-6">
             <label class="form-label">Descrição</label>
-            <input type="text" th:field="*{descricao}" class="form-control" required>
+            <input type="text" th:field="*{descricao}" class="form-control" required
+                   th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid' : ''">
+            <div class="invalid-feedback" th:errors="*{descricao}"></div>
         </div>
 
         <div class="col-md-6" id="contaGroup">
