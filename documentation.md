@@ -514,6 +514,35 @@ Subagents invoked with `@name` in any conversation:
 
 Available globally: `cavecrew` (subagent delegation), `caveman` (token compression), `caveman-commit`, `caveman-compress`, `caveman-help`, `caveman-review`, `caveman-stats`, `customize-opencode`.
 
+## 14. UI Redesign (Phase 14)
+
+See [design.md](design.md) for full design system spec.
+
+### 14.1 Changes
+
+| Change | Details |
+|--------|---------|
+| Emoji → Bootstrap Icons | All 7+ templates had emoji icons replaced with `bi-` classes |
+| Layout CDN | Bootstrap 5.3, Bootstrap Icons 1.11, HTMX 2.0, Alpine.js 3.14, Chart.js 4.4 |
+| Dark mode | `data-bs-theme="dark"` on `<html>`, native Bootstrap dark mode |
+| `yipe.css` | Full rewrite (~300 lines): sidebar overlay, toast system, skeleton loaders, button/card/form/table system |
+| Login page | Password visibility toggle via Alpine.js, uses main CSS |
+| Sidebar | Mobile hamburger toggle with overlay backdrop |
+| DevTools | `spring-boot-devtools` added to `pom.xml` for LiveReload |
+| Toast system | Container in `layout.html`, triggered via HTMX response headers |
+
+### 14.2 Chart Bug Fix
+
+**Root cause:** Three issues prevented all 6 dashboard charts from rendering:
+
+1. **Script outside `layout:fragment`** — The `<script>` block with chart initialization was placed outside `<div layout:fragment="content">` in `dashboard.html`. Thymeleaf Layout Dialect discards any content outside the fragment, so the entire JavaScript was stripped from the rendered page (`dashboard.html:199-336`).
+
+2. **Missing Chart.js CDN** — Chart.js `<script>` tag was removed from `layout.html` during the redesign (CDN cleanup went too far). Without it, the `Chart` constructor was undefined.
+
+3. **Missing `th:inline="javascript"`** — The `<script>` tag lacked `th:inline="javascript"`, so Thymeleaf's `/*[[${expr}]]*/` syntax was not processed correctly: data arrays were wrapped in JavaScript comments (e.g., `labels: /*[1,7,8,...]*/ []`) causing the browser to use the empty fallback `[]`.
+
+**Fix:** Moved `<script>` inside `layout:fragment`, restored Chart.js CDN in layout head, added `th:inline="javascript"` to the script tag. All 6 charts now render with real data.
+
 ## 13. Migration Roadmap
 
 | Phase | Status | Tasks |
@@ -531,3 +560,5 @@ Available globally: `cavecrew` (subagent delegation), `caveman` (token compressi
 | **Phase 11** | ✅ Done | Security (Spring Security, form login, logout) |
 | **Phase 12** | ✅ Done | Testing (unit + web slice tests, 25 tests) |
 | **Phase 13** | ✅ Done | Polish (exception handler, error page, form validation feedback, edge cases) |
+| **Phase 14** | ✅ Done | UI Redesign — Bootstrap Icons, HTMX 2.x, Alpine.js 3.x, dark mode, skeleton loaders, mobile sidebar, toast system, `yipe.css` rewrite (~300 lines), login with password toggle, Chart.js fix |
+| **Phase 14a** | ✅ Done | Fix dashboard charts: script outside `layout:fragment`, missing Chart.js CDN, missing `th:inline="javascript"` |
