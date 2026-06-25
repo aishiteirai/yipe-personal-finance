@@ -1,397 +1,251 @@
-# YIPE Personal Finances — Spring Boot
+# YIPE Personal Finances
 
-## 1. Technology Stack
+> Personal finance control app. Track spending, manage budgets, monitor credit card invoices, and visualize your financial health — all in one place.
 
-| Layer | Choice | Rationale |
-|-------|--------|-----------|
-| Language | Java 21 | LTS, modern features (records, pattern matching, virtual threads) |
-| Framework | Spring Boot 3.4+ | Mature, ecosystem, auto-configuration |
-| Build | Maven | Standard for Spring Boot |
-| ORM | Spring Data JPA + Hibernate | Automatic schema generation, repository pattern |
-| Database | H2 (dev) / PostgreSQL (prod) | H2 for rapid development, PostgreSQL for production |
-| Migrations | Flyway | Version-controlled schema evolution |
-| Frontend | Thymeleaf + Bootstrap 5 + HTMX | Server-side rendering, minimal JS, good DX for single developer |
-| Charts | Chart.js (via Thymeleaf) | Lightweight JS charting, no heavy Python dependencies |
-| Security | Spring Security (form login) | Built-in, sufficient for personal/single-user app |
-| Validation | Jakarta Validation | Bean validation annotations |
-| DTO Mapping | MapStruct | Compile-time mapping, zero runtime overhead |
-| Testing | JUnit 5 + Mockito + Spring Boot Test | Standard Spring testing stack |
-| CI | GitHub Actions | Runs tests on push/PR |
-
-**Why Thymeleaf + HTMX over a SPA?**
-- Single developer maintaining the project
-- No need for a separate Node.js build pipeline
-- HTMX allows dynamic interactions (inline editing, modal forms) without writing JS-heavy frontend code
-- Server-side rendering means business logic stays in one place
-- Faster initial development velocity
+Built as a Spring Boot migration from an original Python/Streamlit prototype. Single-user, server-side rendered. Portuguese UI.
 
 ---
 
-## 2. High-Level Architecture
+## 1. What You Can Do
+
+### Dashboard (`/dashboard`)
+See your financial snapshot at a glance:
+- **General balance** — money in minus money out
+- **Today's x-ray** — credit/debit spent today, end-of-day balance
+- **6 interactive charts** — daily evolution (line), expenses by category (bar), money flow (sankey), monthly waterfall, category radar, yearly comparison (stacked bar)
+- Year/month selector to browse historical data
+
+### Transactions (`/transactions`)
+Register new transactions with:
+- Type (debit, credit, VR, investment, reserve, income)
+- Amount, date, description, account/card, category
+- Recurring support — installments (e.g. 1/12) or monthly recurring
+- Dynamic form — changing type updates account and category options
+
+### Statement (`/statement`)
+Full transaction log with:
+- Filters: year, month, day, type, category
+- **Single edit** — select a row and edit inline
+- **Bulk edit** — select multiple rows, change account/category at once
+- **Restructure installments** — move an installment group to different day/amount/count/account
+
+### Credit Card Invoices (`/invoices`)
+- Select a card and see its invoice for any month
+- Auto-calculates invoice periods based on closing day
+- Shows total amount, due date, and itemized transactions
+
+### Budget Planning (`/budget`)
+50/30/20 rule-based budget:
+- Auto-detects income from transactions and registered salaries
+- Custom income override for projections
+- Progress bars with color alerts (green → orange → red)
+- Configure which categories are "Necessities" vs "Wants"
+
+### Settings (`/settings`)
+Manage your financial entities:
+- Cards (name, bank, closing day, due day)
+- Accounts/Banks (name, type: BANK or VR)
+- Categories (name)
+- Salaries (name, day, amount, account)
+
+### Import/Export (`/import-export`)
+- **Export** — download all data as CSV
+- **Import** — upload CSV, preview first 10 rows, confirm
+
+---
+
+## 2. Tech Stack
+
+| Layer | Choice |
+|-------|--------|
+| Language | Java 21 |
+| Framework | Spring Boot 3.4 |
+| Frontend | Thymeleaf + Bootstrap 5 + HTMX + Alpine.js |
+| Charts | Chart.js |
+| Database | H2 (development) / PostgreSQL (production) |
+| Migrations | Flyway |
+| Security | Spring Security (form login) |
+| ORM | Spring Data JPA + Hibernate |
+| Testing | JUnit 5 + Mockito + AssertJ |
+| Build | Maven |
+
+Thymeleaf + HTMX was chosen over a JavaScript SPA for simpler development: server-side rendering keeps business logic centralized, no Node.js build pipeline needed, and HTMX provides dynamic interactions without writing heavy frontend code.
+
+---
+
+## 3. How It Works (Architecture)
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Browser                       │
-│  Thymeleaf Templates + Bootstrap 5 + HTMX +     │
-│  Chart.js                                       │
-└──────────────┬──────────────────────────────────┘
-               │ HTTP (form submits + HTMX requests)
-               ▼
-┌─────────────────────────────────────────────────┐
-│            Spring Boot Application              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────────────┐ │
-│  │Controller│ │  Service │ │  Repository (JPA)│ │
-│  │  Layer   │◄──► Layer  │◄──►     Layer      │ │
-│  └──────────┘ └──────────┘ └──────────────────┘ │
-│                      │                          │
-│               ┌──────┴──────┐                   │
-│               │   Model     │                   │
-│               │   (Entity)  │                   │
-│               └─────────────┘                   │
-└──────────────────────┬──────────────────────────┘
-                       │ JDBC
-                ┌───────┴────────┐
-                │H2 / PostgreSQL │
-                └────────────────┘
+Browser (Thymeleaf + HTMX + Chart.js)
+       │ HTTP requests
+       ▼
+Controller Layer ──► Service Layer ──► Repository Layer ──► Database
+       │                  │                    │
+   Validates          Business logic       Data access
+   input              (budget rules,        (JPA queries)
+   Returns views/     invoice periods,
+   HTMX fragments     installment math)
 ```
 
-**Layer responsibilities:**
-- **Controller** — handles HTTP requests, validates input, returns Thymeleaf views or HTMX fragments
-- **Service** — business logic (invoice calculation, budget rules, installment restructuring, etc.)
-- **Repository** — Spring Data JPA interfaces for DB access
-- **Model (Entity)** — JPA entities mapped to database tables
+**Flow:** You click a link or submit a form → the **Controller** receives the request, calls a **Service** for business logic, which queries the database through a **Repository** → the result is rendered into HTML and sent back. HTMX allows updating only parts of the page (like a chart or table) without a full reload.
 
 ---
 
-## 3. Project Structure
+## 4. Screens Overview
 
-```
-yipe-personal-finances/
-├── pom.xml
-├── src/
-│   ├── main/
-│   │   ├── java/com/yipe/finance/
-│   │   │   ├── YipeApplication.java
-│   │   │   ├── config/
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   ├── WebConfig.java
-│   │   │   │   └── DataInitializer.java
-│   │   │   ├── controller/
-│   │   │   │   ├── DashboardController.java
-│   │   │   │   ├── TransactionController.java
-│   │   │   │   ├── StatementController.java
-│   │   │   │   ├── InvoiceController.java
-│   │   │   │   ├── BudgetController.java
-│   │   │   │   ├── SettingsController.java
-│   │   │   │   └── ImportExportController.java
-│   │   │   ├── dto/
-│   │   │   │   ├── TransactionDTO.java
-│   │   │   │   ├── TransactionFilterDTO.java
-│   │   │   │   ├── InvoiceDTO.java
-│   │   │   │   ├── BudgetPlanDTO.java
-│   │   │   │   └── DashboardSummaryDTO.java
-│   │   │   ├── entity/
-│   │   │   │   ├── Transaction.java
-│   │   │   │   ├── TransactionType.java
-│   │   │   │   ├── Category.java
-│   │   │   │   ├── Account.java
-│   │   │   │   ├── Card.java
-│   │   │   │   └── Salary.java
-│   │   │   ├── mapper/
-│   │   │   │   ├── TransactionMapper.java    # not yet created
-│   │   │   │   └── CardMapper.java           # not yet created
-│   │   │   ├── repository/
-│   │   │   │   ├── TransactionRepository.java
-│   │   │   │   ├── CategoryRepository.java
-│   │   │   │   ├── AccountRepository.java
-│   │   │   │   ├── CardRepository.java
-│   │   │   │   └── SalaryRepository.java
-│   │   │   ├── service/
-│   │   │   │   ├── TransactionService.java
-│   │   │   │   ├── DashboardService.java
-│   │   │   │   ├── InvoiceService.java
-│   │   │   │   ├── BudgetService.java
-│   │   │   │   └── ImportExportService.java
-│   │   │   └── exception/
-│   │   │       ├── ResourceNotFoundException.java
-│   │   │       └── GlobalExceptionHandler.java
-│   │   ├── resources/
-│   │   │   ├── application.yml
-│   │   │   ├── db/migration/
-│   │   │   │   ├── V1__create_initial_schema.sql
-│   │   │   │   ├── V2__seed_default_data.sql
-│   │   │   │   └── V3__seed_test_data.sql
-│   │   │   ├── static/
-│   │   │   │   ├── css/
-│   │   │   │   │   └── yipe.css
-│   │   │   │   └── js/
-│   │   │   └── templates/
-│   │   │       ├── layout.html
-│   │   │       ├── dashboard.html
-│   │   │       ├── transactions/
-│   │   │       │   ├── list.html
-│   │   │       │   ├── form.html
-│   │   │       │   └── fragments.html
-│   │   │       ├── statement.html
-│   │   │       ├── invoices.html
-│   │   │       ├── budget.html
-│   │   │       ├── settings.html
-│   │   │       ├── import-export.html
-│   │   │       ├── login.html
-│   │   │       └── error.html
-│   └── test/
-│       └── java/com/yipe/finance/
-│           ├── YipeApplicationTests.java
-│           ├── service/
-│           │   ├── TransactionServiceTest.java
-│           │   ├── InvoiceServiceTest.java
-│           │   └── BudgetServiceTest.java
-│           └── controller/
-│               └── DashboardControllerTest.java
-└── documentation/
-    ├── documentation.md       # this file — stable project reference
-    ├── development.md         # living roadmap, sprints, known issues
-    ├── design.md              # design system specification
-    └── YIPE-SKILLS-AND-AGENTS.md  # OpenCode tooling documentation
-```
+### Dashboard — Central de Análises
+- Metric cards: balance, invested, adjust balance
+- Today's snapshot: credit spent, debit spent, balance
+- 6 charts with year/month selector
+
+### Transaction Form
+- Type selector drives which account and category fields show
+- Recurring checkbox reveals installment/monthly options
+- Validation feedback on submit
+
+### Statement Table
+- Collapsible filter panel
+- Sortable transaction history
+- 3 tool tabs: edit single, bulk edit, restructure
+
+### Invoices
+- Card selector → auto-loads available invoice periods
+- Shows total, due date, itemized purchases for the period
+
+### Budget
+- Period selector (year + month)
+- Income: real income or manual override
+- Sliders for 50/30/20 percentages (must total 100%)
+- Category multiselects for Necessities and Wants
+- Live progress bars with color thresholds
+
+### Settings
+- 4 tabs: Cards, Accounts, Categories, Salaries
+- Each tab: editable table with add/delete and rename support
+
+### Import/Export
+- Export downloads a CSV with all transactions
+- Import uploads CSV → preview → confirm with error reporting
 
 ---
 
-## 4. Database Schema (JPA Entities)
+## 5. Database Structure
 
-### 4.1 Transaction (`transacoes`)
+| Entity | Table | Key Fields |
+|--------|-------|------------|
+| Transaction | `transacoes` | date, type, amount, category, account, description, installment |
+| Category | `categorias` | name (PK) |
+| Account | `contas` | name (PK), type (BANK/VR) |
+| Card | `cartoes` | name (PK), bank, closingDay, dueDay |
+| Salary | `salarios` | name, day, amount, account |
 
-| Column | Type | Notes |
-|--------|------|-------|
-| id | Long (PK, auto) | |
-| date | LocalDate | |
-| type | String (enum-like) | DEBIT, CREDIT, VR, INVESTMENT, RESERVE, INCOME |
-| amount | BigDecimal | |
-| category | String | FK to Category name |
-| account | String | FK to Account/Card name |
-| description | String | |
-| installment | String | e.g. "1/12", "Recurring", "Single" |
-
-### 4.2 Category (`categorias`)
-
-| Column | Type |
-|--------|------|
-| name | String (PK) |
-
-### 4.3 Account (`contas`)
-
-| Column | Type |
-|--------|------|
-| name | String (PK) |
-| type | String (BANK, VR) |
-
-### 4.4 Card (`cartoes`)
-
-| Column | Type |
-|--------|------|
-| name | String (PK) |
-| bank | String |
-| closingDay | Integer |
-| dueDay | Integer |
-
-### 4.5 Salary (`salarios`)
-
-| Column | Type |
-|--------|------|
-| id | Long (PK, auto) |
-| name | String |
-| day | Integer |
-| amount | BigDecimal |
-| account | String |
+Entity fields use Portuguese names (`nome`, `data`, `valor`, `tipo`). Transactions link to categories and accounts by name (string reference).
 
 ---
 
-## 5. Screen Designs
+## 6. Routes (API)
 
-### 5.1 Dashboard (`/dashboard`)
+### Pages
+| Path | Description |
+|------|-------------|
+| `/` | Redirects to dashboard |
+| `/dashboard` | Main dashboard with metrics and charts |
+| `/transactions` | New transaction form |
+| `/statement` | Filtered transaction table |
+| `/invoices` | Credit card invoice viewer |
+| `/budget` | Budget planning with 50/30/20 |
+| `/settings` | Manage cards, accounts, categories, salaries |
+| `/import-export` | CSV import/export |
 
-**Layout:**
-- Top row: 3 metric cards (General Balance, Total Invested, Adjust Balance button)
-- Section "Raio-X de Hoje": 3 info cards (Credit spent today, Debit spent today, End-of-day balance) with "View in Statement" links
-- Divider
-- Section "Central de Análises":
-  - Year/Month selector (2 dropdowns)
-  - 6 Chart.js charts in a 2-column grid (line, bar, sankey/flow, waterfall, radar, yearly stacked bar)
-- Sidebar: navigation menu (same 7 items as current app)
-
-### 5.2 Transactions (`/transactions`)
-
-**Layout:**
-- Form with fields: type (dropdown), amount, date, description, account/card (dynamic based on type), category (dynamic based on type), recurring checkbox
-- If recurring: radio (installment / indefinite monthly), number of months
-- Submit button
-
-**HTMX:** Type change → updates account dropdown and category visibility
-
-### 5.3 Statement (`/statement`)
-
-**Layout:**
-- Filter section (collapsible): year, month, day, type, category dropdowns + clear button
-- Data table: columns (ID, date, type, description, category, account, amount, installment), sortable
-- Tools section with 3 tabs:
-  1. **Edit Single** — select a row, edit fields inline, save/delete
-  2. **Bulk Edit** — check rows, change account/category in bulk
-  3. **Restructure Installments** — select installment group, change day/amount/count/account
-
-### 5.4 Credit Card Invoices (`/invoices`)
-
-**Layout:**
-- Card selector (dropdown)
-- Invoice reference month selector (year-month, auto-detect current)
-- Metric: total invoice amount
-- Due date info
-- Table: date, description, category, amount, installment
-
-### 5.5 Budget Planning (`/budget`)
-
-**Layout:**
-- Period selector (year, month)
-- Income section: shows real income (auto-calculated from INCOME transactions) + editable field for projections
-- Budget rule sliders: Necessities / Wants / Investments (must sum to 100%)
-- Category mapping: multiselects for which categories are "Necessities" and which are "Wants"
-- Progress bars (3): Necessities, Wants, Investments with color coding (green/ orange/ red)
-- Warnings when over budget
-
-### 5.6 Settings (`/settings`)
-
-**Layout:**
-- 4 tabs: Cards, Accounts/Banks, Categories, Salaries
-- Each tab has an editable table with add/delete rows
-- Save button per tab
-
-### 5.7 Import/Export (`/import-export`)
-
-**Layout:**
-- Export: "Download Backup (CSV)" button → file download
-- Import: file upload (CSV), preview first rows, confirm button
-
----
-
-## 6. API Design (Controllers)
-
-Server-side rendering — most controllers return full pages; some return HTML fragments for HTMX.
-
-### 6.1 Page routes (full views)
-
-| Method | Path | View | Description |
-|--------|------|------|-------------|
-| GET | `/` | redirect → `/dashboard` | Home |
-| GET | `/dashboard` | `dashboard` | Main dashboard |
-| GET | `/transactions` | `transactions/list` | Transaction list + new form |
-| GET | `/statement` | `statement` | Statement with filters |
-| GET | `/invoices` | `invoices` | Credit card invoices |
-| GET | `/budget` | `budget` | Budget planning |
-| GET | `/settings` | `settings` | Settings manager |
-| GET | `/import-export` | `import-export` | Import/export page |
-
-### 6.2 Action routes (form submits / HTMX)
-
-| Method | Path | Action |
-|--------|------|--------|
-| POST | `/transactions` | Create new transaction (with installment expansion) |
-| PUT | `/transactions/{id}` | Update single transaction |
-| DELETE | `/transactions/{id}` | Delete single transaction |
-| POST | `/transactions/bulk-update` | Bulk update account/category |
-| POST | `/transactions/restructure` | Restructure installment group |
-| GET | `/dashboard/charts?year=X&month=Y` | Return chart panel fragment |
-| GET | `/statement/table?filters...` | Return filtered table fragment |
-| POST | `/settings/cards` | Save cards table |
-| POST | `/settings/accounts` | Save accounts table |
-| POST | `/settings/categories` | Save categories table |
-| POST | `/settings/salaries` | Save salaries table |
-| POST | `/import/conform` | Confirm CSV import |
-| GET | `/export/csv` | Download CSV backup |
+### Actions
+| Method + Path | What it does |
+|--------------|--------------|
+| POST `/transactions` | Create transaction (supports installments) |
+| POST `/statement/{id}/update` | Edit a single transaction |
+| POST `/statement/{id}/delete` | Delete a transaction |
+| POST `/statement/bulk-update` | Bulk edit account/category |
+| POST `/statement/restructure` | Restructure installment group |
+| POST `/settings/cards/save` | Save/rename card |
+| POST `/settings/accounts/save` | Save/rename account |
+| POST `/settings/categories/save` | Save/rename category |
+| POST `/settings/salaries/save` | Save salary |
+| POST `/import-export/import/preview` | Preview CSV upload |
+| POST `/import-export/import/confirm` | Confirm CSV import |
+| GET `/import-export/export` | Download CSV backup |
 
 ---
 
 ## 7. Security
 
-- Single user form-based login via Spring Security
-- CSRF protection enabled (form submits)
-- Session management for login persistence
-- BCrypt password encoding
-- H2 console whitelisted in dev profile
+- Form-based login with Spring Security (single user)
+- Passwords hashed with BCrypt
+- CSRF protection enabled for all form submissions
+- H2 console available in dev profile only
+- Dev credentials: `admin` / `admin` (hardcoded — replace with env vars for production)
 
 ---
 
-## 8. Development Setup
+## 8. Running the App
 
-**Prerequisites:**
-- Java 21+
-- Maven 3.9+
+**Prerequisites:** Java 21+, Maven 3.9+
 
-**Local run:**
 ```bash
+# Run in development mode
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
 
-**Testing:**
-```bash
+# Run all tests
 mvn test
-```
 
-**Build & package:**
-```bash
+# Build production JAR
 mvn package -DskipTests
 java -jar target/yipe-finance-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
-**Login:** `admin` / `admin` (dev only — hardcoded in `SecurityConfig`)
-
-**H2 Console:** `http://localhost:8080/h2-console` (dev only)
+Open `http://localhost:8080` and log in with `admin` / `admin`.
 
 ---
 
-## 9. OpenCode Development Tools
+## 9. Project Layout
 
-See [YIPE-SKILLS-AND-AGENTS.md](YIPE-SKILLS-AND-AGENTS.md) for full documentation.
-
-### Installed Skills (Community)
-
-| Skill | Source | Purpose |
-|-------|--------|---------|
-| `java-springboot` | vekzz-dev | Spring Boot patterns (DI, DTOs, validation, security) |
-| `spring-boot-engineer` | synapse-ai-hub | Complete Spring Boot workflow with verification gates |
-| `java-springboot-testing` | vekzz-dev | Test slices, MockMvc, Testcontainers |
-| `java-junit` | vekzz-dev | JUnit 5, parametrized tests, AssertJ, Mockito |
-| `java-architecture` | Happydong | Enterprise architecture, packages by feature |
-| `java-ddd-patterns` | Happydong | DDD, rich domain model, MapStruct, error codes |
-| `java-code-style` | Happydong | Naming, logging, exception conventions |
-| `java-decoupling` | Happydong | Dependency injection, events, ports & adapters |
-| `java-design-patterns` | Happydong | GoF patterns for business logic |
-| `git-commit` | vekzz-dev | Conventional commits with diff analysis |
-| `changelog-maintenance` | vekzz-dev | Semver, changelogs, release notes |
-
-### Custom Agents (Project-specific)
-
-- **`@yipe-scaffold`** — Creates a complete Spring Boot module (entity → repository → service → controller → Thymeleaf template → Flyway migration)
-- **`@yipe-test-gen`** — Generates JUnit 5 + Mockito tests (unit + slice + integration) for any class
+```
+src/
+├── main/java/com/yipe/finance/
+│   ├── config/          # Security, web config, data initialization
+│   ├── controller/      # 7 controllers (one per screen)
+│   ├── dto/             # Data transfer objects
+│   ├── entity/          # JPA entities (Transaction, Category, etc.)
+│   ├── mapper/          # MapStruct mappers
+│   ├── repository/      # 5 Spring Data JPA repositories
+│   ├── service/         # Business logic (5 services)
+│   └── exception/       # Global error handler
+├── main/resources/
+│   ├── db/migration/    # 3 Flyway migrations (schema + seed data)
+│   ├── static/css/      # yipe.css (custom styles)
+│   ├── static/js/       # yipe.js (shared utilities)
+│   └── templates/       # 9 Thymeleaf templates
+└── test/java/com/yipe/finance/
+    ├── controller/      # 7 controller tests (@WebMvcTest)
+    ├── service/         # 4 service tests
+    └── repository/      # 5 repository tests (@DataJpaTest)
+```
 
 ---
 
-## 10. Migration Roadmap
+## 10. AI Tooling
 
-All 14 phases complete — the original Python/Streamlit app has been fully ported to Spring Boot.
+This project includes OpenCode skills and agents to help with development:
 
-| Phase | Status | Tasks |
-|-------|--------|-------|
-| **1** | ✅ | Project setup (Maven, dependencies, application.yml, Flyway initial schema) |
-| **2** | ✅ | Entities + Repositories + DataInitializer |
-| **3** | ✅ | Layout template + sidebar navigation + CSS |
-| **4** | ✅ | Transaction module (create, list, edit, delete, installments) |
-| **5** | ✅ | Statement module (filters, table, bulk edit, installment restructure) |
-| **6** | ✅ | Dashboard module (metrics, charts, daily x-ray) |
-| **7** | ✅ | Invoice module (credit card bill calculation) |
-| **8** | ✅ | Budget module (rule sliders, category mapping, progress bars) |
-| **9** | ✅ | Settings module (CRUD tables for cards/accounts/categories/salaries) |
-| **10** | ✅ | Import/Export module (CSV) |
-| **11** | ✅ | Security (Spring Security, form login, logout) |
-| **12** | ✅ | Testing (unit + web slice tests, 25 tests) |
-| **13** | ✅ | Polish (exception handler, error page, form validation feedback, edge cases) |
-| **14** | ✅ | UI Redesign — Bootstrap Icons, HTMX 2.x, Alpine.js 3.x, dark mode, skeleton loaders, mobile sidebar, toast system, `yipe.css` rewrite, login with password toggle |
-| **14a** | ✅ | Fix dashboard charts — script outside `layout:fragment`, missing Chart.js CDN, missing `th:inline="javascript"` |
+**Custom Agents (invoke with `@name`):**
+- `@yipe-scaffold` — Generate a complete CRUD module (entity → service → controller → template → migration)
+- `@yipe-test-gen` — Generate unit + slice + integration tests for any class
+- `@yipe-fix` — Diagnose and fix known bugs from the roadmap
+
+**Project Skills (auto-loaded):**
+- `yipe-htmx` — HTMX fragment patterns
+- `yipe-entity` — JPA entity conventions (Portuguese fields)
+- `yipe-controller` — Controller patterns
+- `yipe-migration` — Flyway migration conventions
+- `yipe-security` — Spring Security configuration
+- `yipe-test-data` — Test data seeding
+
+For full details, see [YIPE-SKILLS-AND-AGENTS.md](YIPE-SKILLS-AND-AGENTS.md).

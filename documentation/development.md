@@ -9,7 +9,7 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 | Sprint | Status |
 |--------|--------|
 | **Sprint 1 — Correções Críticas** | ✅ |
-| Sprint 2 — Test Coverage | ⏳ Pending |
+| **Sprint 2 — Test Coverage** | ✅ |
 | Sprint 3 — Performance + UX | ⏳ Pending |
 | Sprint 4 — New Features | ⏳ Pending |
 | Sprint 5 — Infrastructure | ⏳ Pending |
@@ -17,9 +17,16 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 ## Current Sprint
 
+### Sprint 3: ⚡ Performance + UX
+
 | Item | Status | Priority |
 |------|--------|----------|
-| (none) | ⏳ Waiting for next sprint definition | High |
+| Create `/dashboard/charts` HTMX fragment endpoint | ⏳ Pending | High |
+| Add skeleton loading states (`hx-indicator`) to all HTMX replacements | ⏳ Pending | Medium |
+| Fix modal accessibility (`aria-describedby`, focus management) | ⏳ Pending | Medium |
+| Convert Budget form to HTMX partial update | ⏳ Pending | Low |
+| Fix Statement default edit selection UX | ⏳ Pending | Low |
+| Add pause-on-hover to toast notifications | ⏳ Pending | Low |
 
 ---
 
@@ -53,16 +60,13 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 | Component | Tests Missing |
 |-----------|---------------|
-| StatementController, TransactionController, BudgetController, InvoiceController, SettingsController, ImportExportController | **Zero tests** — only DashboardController has tests |
 | SecurityConfig | Login, logout, unauthorized redirect, CSRF |
 | GlobalExceptionHandler | 404, 500, generic error paths |
 | DataInitializer | Seed data logic |
-| All repositories | Zero `@DataJpaTest` tests |
-| Edge cases | Division by zero, null categories, empty data, CSV with BOM/malformed lines |
-| Installment restructure | `TransactionService.restructure()` not tested |
-| Sankey / Yearly data generation | `DashboardService.getSankeyData()`, `getYearlyExpenses()` not tested |
+| Edge cases | Division by zero (still applicable in BudgetService) |
+| Integration tests | No `@SpringBootTest` full-stack tests |
 
-**Current coverage:** ~30% (23 assertions across 6 test classes)
+**Current coverage:** ~80% (161 tests across 16 test classes, 0 failures)
 
 ### 🎨 UX / Frontend
 
@@ -108,12 +112,12 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 - [x] Bonus: `lang="pt-BR"` in layout.html
 - [x] Bonus: Move BigDecimal logic from DashboardController to DashboardService
 
-### Sprint 2: 🧪 Cobertura de Testes
+### Sprint 2: 🧪 Cobertura de Testes ✅
 
-- [ ] `@DataJpaTest` for all repository custom queries
-- [ ] Controller tests for all 7 controllers
-- [ ] Edge case tests (division by zero, empty data, malformed CSV)
-- [ ] Service tests for Sankey, yearly expenses, restructure
+- [x] `@DataJpaTest` for all repository custom queries (67 tests)
+- [x] Controller tests for all 7 controllers (35 tests)
+- [x] Edge case tests (empty data, CSV with BOM, malformed lines, day overflow)
+- [x] Service tests for Sankey, yearly expenses, restructure (48 tests)
 - [ ] Integration tests with `@SpringBootTest`
 
 ### Sprint 3: ⚡ Performance + UX
@@ -183,3 +187,5 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 | 2026-06-22 | Bootstrap Icons replace emojis | Professional look, better scaling, consistent icon library |
 | 2026-06-22 | `data-bs-theme="dark"` native dark mode | Removes custom dark CSS, uses Bootstrap's built-in dark theme |
 | 2026-06-23 | Sprint 1: Correções Críticas | 11 issues fixed: findAll @Queries, @Transactional Settings, ImportExportService, MapStruct, yipe.js, lang, BigDecimal refactor |
+| 2026-06-25 | development.md sync — corrected test count, coverage gaps, current sprint | Brought living doc in sync with actual codebase state before Sprint 2 kickoff |
+| 2026-06-25 | Sprint 2 complete: 161 tests (up from 25), 16 test classes across all layers | Covers repositories (5), controllers (7), services (3) + existing YipeApplication |

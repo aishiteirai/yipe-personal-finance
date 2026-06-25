@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -193,5 +194,164 @@ class TransactionServiceTest {
     void findById_shouldReturnTransaction() {
         when(repository.findById(1L)).thenReturn(Optional.of(new Transaction()));
         assertThat(service.findById(1L)).isPresent();
+    }
+
+    // ---- Untested methods below ----
+
+    @Test
+    @DisplayName("should restructure installments with new count, value, day and account")
+    void restructure_shouldCreateNewInstallments() {
+        Transaction t1 = new Transaction();
+        t1.setId(1L); t1.setData(LocalDate.of(2026, 1, 10));
+        t1.setTipo(TransactionType.CREDIT); t1.setValor(BigDecimal.valueOf(300));
+        t1.setCategoria("Eletrônicos"); t1.setConta("Nubank");
+        t1.setDescricao("Compra"); t1.setParcela("1/3");
+        Transaction t2 = new Transaction();
+        t2.setId(2L); t2.setData(LocalDate.of(2026, 2, 10));
+        t2.setTipo(TransactionType.CREDIT); t2.setValor(BigDecimal.valueOf(300));
+        t2.setCategoria("Eletrônicos"); t2.setConta("Nubank");
+        t2.setDescricao("Compra"); t2.setParcela("2/3");
+        Transaction t3 = new Transaction();
+        t3.setId(3L); t3.setData(LocalDate.of(2026, 3, 10));
+        t3.setTipo(TransactionType.CREDIT); t3.setValor(BigDecimal.valueOf(300));
+        t3.setCategoria("Eletrônicos"); t3.setConta("Nubank");
+        t3.setDescricao("Compra"); t3.setParcela("3/3");
+
+        when(repository.findInstallmentGroup("Compra", "Nubank", BigDecimal.valueOf(300)))
+                .thenReturn(List.of(t1, t2, t3));
+
+        service.restructure("Compra", "Nubank", BigDecimal.valueOf(300),
+                15, 6, BigDecimal.valueOf(150), "Itaú");
+
+        verify(repository).deleteAll(List.of(t1, t2, t3));
+        verify(repository).saveAll(listCaptor.capture());
+        List<Transaction> novas = listCaptor.getValue();
+        assertThat(novas).hasSize(6);
+        assertThat(novas.get(0).getData()).isEqualTo(LocalDate.of(2026, 1, 15));
+        assertThat(novas.get(0).getValor()).isEqualByComparingTo("150");
+        assertThat(novas.get(0).getConta()).isEqualTo("Itaú");
+        assertThat(novas.get(0).getParcela()).isEqualTo("1/6");
+        assertThat(novas.get(0).getTipo()).isEqualTo(TransactionType.CREDIT);
+        assertThat(novas.get(0).getCategoria()).isEqualTo("Eletrônicos");
+        assertThat(novas.get(0).getDescricao()).isEqualTo("Compra");
+        assertThat(novas.get(5).getData()).isEqualTo(LocalDate.of(2026, 6, 15));
+        assertThat(novas.get(5).getParcela()).isEqualTo("6/6");
+    }
+
+    @Test
+    @DisplayName("should do nothing when old installment group is empty")
+    void restructure_shouldDoNothing_whenEmptyGroup() {
+        when(repository.findInstallmentGroup("Compra", "Nubank", BigDecimal.valueOf(300)))
+                .thenReturn(List.of());
+
+        service.restructure("Compra", "Nubank", BigDecimal.valueOf(300),
+                15, 6, BigDecimal.valueOf(150), "Itaú");
+
+        verify(repository, never()).deleteAll(any());
+        verify(repository, never()).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("should clamp day when target month has fewer days (e.g. Feb 31 -> 28)")
+    void restructure_shouldClampDay_whenMonthTooShort() {
+        Transaction t1 = new Transaction();
+        t1.setId(1L); t1.setData(LocalDate.of(2026, 1, 31));
+        t1.setTipo(TransactionType.CREDIT); t1.setValor(BigDecimal.valueOf(300));
+        t1.setCategoria("Eletrônicos"); t1.setConta("Nubank");
+        t1.setDescricao("Compra"); t1.setParcela("1/3");
+        Transaction t2 = new Transaction();
+        t2.setId(2L); t2.setData(LocalDate.of(2026, 2, 28));
+        t2.setTipo(TransactionType.CREDIT); t2.setValor(BigDecimal.valueOf(300));
+        t2.setCategoria("Eletrônicos"); t2.setConta("Nubank");
+        t2.setDescricao("Compra"); t2.setParcela("2/3");
+        Transaction t3 = new Transaction();
+        t3.setId(3L); t3.setData(LocalDate.of(2026, 3, 31));
+        t3.setTipo(TransactionType.CREDIT); t3.setValor(BigDecimal.valueOf(300));
+        t3.setCategoria("Eletrônicos"); t3.setConta("Nubank");
+        t3.setDescricao("Compra"); t3.setParcela("3/3");
+
+        when(repository.findInstallmentGroup("Compra", "Nubank", BigDecimal.valueOf(300)))
+                .thenReturn(List.of(t1, t2, t3));
+
+        service.restructure("Compra", "Nubank", BigDecimal.valueOf(300),
+                31, 3, BigDecimal.valueOf(300), "Nubank");
+
+        verify(repository).saveAll(listCaptor.capture());
+        List<Transaction> novas = listCaptor.getValue();
+        assertThat(novas).hasSize(3);
+        assertThat(novas.get(0).getData()).isEqualTo(LocalDate.of(2026, 1, 31));
+        assertThat(novas.get(1).getData()).isEqualTo(LocalDate.of(2026, 2, 28));
+        assertThat(novas.get(2).getData()).isEqualTo(LocalDate.of(2026, 3, 31));
+    }
+
+    @Test
+    @DisplayName("should return all transactions")
+    void findAll_shouldReturnAll() {
+        when(repository.findAll()).thenReturn(List.of(new Transaction(), new Transaction()));
+        assertThat(service.findAll()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("should return distinct years from repository")
+    void findDistinctYears_shouldReturnYears() {
+        when(repository.findDistinctYears()).thenReturn(List.of(2026, 2025));
+        assertThat(service.findDistinctYears()).containsExactly(2026, 2025);
+    }
+
+    @Test
+    @DisplayName("should group installments by descricao + conta + valor")
+    void findInstallmentGroups_shouldGroup() {
+        Transaction t1 = new Transaction();
+        t1.setDescricao("Compra"); t1.setConta("Nubank"); t1.setValor(BigDecimal.valueOf(100));
+        t1.setParcela("1/3");
+        Transaction t2 = new Transaction();
+        t2.setDescricao("Compra"); t2.setConta("Nubank"); t2.setValor(BigDecimal.valueOf(100));
+        t2.setParcela("2/3");
+        Transaction t3 = new Transaction();
+        t3.setDescricao("Outra"); t3.setConta("Itaú"); t3.setValor(BigDecimal.valueOf(200));
+        t3.setParcela("1/2");
+
+        when(repository.findInstallments()).thenReturn(List.of(t1, t2, t3));
+
+        Map<String, List<Transaction>> groups = service.findInstallmentGroups();
+
+        assertThat(groups).hasSize(2);
+        assertThat(groups.get("Compra | Nubank | R$ 100")).hasSize(2);
+        assertThat(groups.get("Outra | Itaú | R$ 200")).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("should skip updating account when null or blank in bulkUpdate")
+    void bulkUpdate_shouldSkipNullAccount() {
+        Transaction t1 = new Transaction(); t1.setId(1L); t1.setConta("Nubank"); t1.setCategoria("Alimentação");
+        Transaction t2 = new Transaction(); t2.setId(2L); t2.setConta("Itaú"); t2.setCategoria("Lazer");
+        when(repository.findAllById(List.of(1L, 2L))).thenReturn(List.of(t1, t2));
+
+        service.bulkUpdate(List.of(1L, 2L), "", "NovaCategoria");
+
+        verify(repository).saveAll(List.of(t1, t2));
+        assertThat(t1.getConta()).isEqualTo("Nubank");
+        assertThat(t1.getCategoria()).isEqualTo("NovaCategoria");
+        assertThat(t2.getConta()).isEqualTo("Itaú");
+    }
+
+    @Test
+    @DisplayName("should skip updating categoria when null or blank in bulkUpdate")
+    void bulkUpdate_shouldSkipNullCategoria() {
+        Transaction t1 = new Transaction(); t1.setId(1L); t1.setConta("Nubank"); t1.setCategoria("Alimentação");
+        when(repository.findAllById(List.of(1L))).thenReturn(List.of(t1));
+
+        service.bulkUpdate(List.of(1L), "NovaConta", null);
+
+        verify(repository).saveAll(List.of(t1));
+        assertThat(t1.getConta()).isEqualTo("NovaConta");
+        assertThat(t1.getCategoria()).isEqualTo("Alimentação");
+    }
+
+    @Test
+    @DisplayName("should find filtered with all null parameters")
+    void findFiltered_shouldHandleAllNull() {
+        service.findFiltered(null, null, null, null, null);
+        verify(repository).findFiltered(null, null, null, null, null);
     }
 }
