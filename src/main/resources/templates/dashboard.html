@@ -5,157 +5,113 @@
 <body>
 <div layout:fragment="content">
 
-    <!-- Header + Filters row -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h1 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Visão Geral</h1>
-        <div class="d-flex gap-2">
-            <select name="ano" class="form-select form-select-sm" id="anoSelect" style="width: auto;"
-                    hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
-                    hx-include="#mesSelect" hx-indicator="#charts-indicator">
-                <option th:each="y : ${availableYears}" th:value="${y}"
-                        th:selected="${anoSelecionado == y}" th:text="${y}"></option>
-            </select>
-            <select name="mes" class="form-select form-select-sm" id="mesSelect" style="width: auto;"
-                    hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
-                    hx-include="#anoSelect" hx-indicator="#charts-indicator">
-                <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
-                        th:selected="${mesSelecionado == m}"
-                        th:text="${mesesPt[m - 1]}"></option>
-            </select>
+    <!-- KPI Bar -->
+    <div class="kpi-bar">
+        <div class="kpi-item">
+            <span class="kpi-label">Saldo Geral</span>
+            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(saldoGeral, 0, 'COMMA', 2, 'POINT')}|"></span>
+        </div>
+        <div class="kpi-divider"></div>
+        <div class="kpi-item">
+            <span class="kpi-label">Investido</span>
+            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(totalInvestido, 0, 'COMMA', 2, 'POINT')}|"></span>
+        </div>
+        <div class="kpi-divider"></div>
+        <div class="kpi-item">
+            <span class="kpi-label">Gasto Hoje</span>
+            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(gastoDebHoje, 0, 'COMMA', 2, 'POINT')}|"></span>
+            <span class="kpi-sublabel">Créd: R$ <span th:text="${#numbers.formatDecimal(gastoCredHoje, 0, 'COMMA', 2, 'POINT')}"></span></span>
+        </div>
+        <div class="kpi-divider"></div>
+        <div class="kpi-item">
+            <span class="kpi-label">Saldo Hoje</span>
+            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(saldoHoje, 0, 'COMMA', 2, 'POINT')}|"></span>
+        </div>
+        <div class="kpi-divider"></div>
+        <div class="kpi-item">
+            <span class="kpi-label">Período</span>
+            <div class="kpi-selects">
+                <select name="ano" id="anoSelect"
+                        hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
+                        hx-include="#mesSelect" hx-indicator="#charts-indicator">
+                    <option th:each="y : ${availableYears}" th:value="${y}"
+                            th:selected="${anoSelecionado == y}" th:text="${y}"></option>
+                </select>
+                <select name="mes" id="mesSelect"
+                        hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
+                        hx-include="#anoSelect" hx-indicator="#charts-indicator">
+                    <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
+                            th:selected="${mesSelecionado == m}"
+                            th:text="${mesesPt[m - 1]}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="kpi-divider"></div>
+        <div class="kpi-item">
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#ajusteModal">
+                <i class="bi bi-sliders"></i> Ajustar
+            </button>
         </div>
     </div>
 
-    <!-- Compact Metrics Bar (Overview + Today's X-Ray merged) -->
-    <div class="row g-2 mb-4">
-        <div class="col-md-3 col-6">
-            <div class="metric-card">
-                <h6><i class="bi bi-wallet"></i> Saldo Geral</h6>
-                <h4 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(saldoGeral, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-            </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="metric-card">
-                <h6><i class="bi bi-piggy-bank"></i> Investido</h6>
-                <h4 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(totalInvestido, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-            </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="metric-card">
-                <h6><i class="bi bi-credit-card-2-front"></i> Gasto Hoje</h6>
-                <h4 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(gastoDebHoje, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-                <small class="text-secondary">Créd: R$ <span th:text="${#numbers.formatDecimal(gastoCredHoje, 0, 'COMMA', 2, 'POINT')}"></span></small>
-            </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="metric-card">
-                <h6><i class="bi bi-check-circle"></i> Saldo Hoje</h6>
-                <h4 class="mb-0">R$ <span th:text="${#numbers.formatDecimal(saldoHoje, 0, 'COMMA', 2, 'POINT')}"></span></h4>
-            </div>
-        </div>
+    <!-- Loading -->
+    <div id="charts-indicator" class="htmx-indicator text-center py-3">
+        <div class="spinner-border spinner-border-sm text-secondary me-2" role="status"></div>
+        <span class="text-secondary small">Carregando...</span>
     </div>
 
-    <!-- Loading indicator -->
-    <div id="charts-indicator" class="htmx-indicator mb-4">
-        <div class="row g-2 mb-2">
-            <div class="col-md-4"><div class="skeleton skeleton-chart"></div></div>
-            <div class="col-md-4"><div class="skeleton skeleton-chart"></div></div>
-            <div class="col-md-4"><div class="skeleton skeleton-chart"></div></div>
-        </div>
-        <div class="row g-2">
-            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
-            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
-            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
-            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
-        </div>
-    </div>
-
-    <!-- Charts Area (replaced by HTMX on filter change) -->
+    <!-- Charts -->
     <div id="charts-area" th:fragment="chartsArea">
 
-        <!-- Monthly sub-metrics -->
-        <div class="row g-2 mb-3">
-            <div class="col-md-4 col-4">
-                <div class="metric-card py-2 px-3 text-center">
-                    <h6 class="mb-0 text-success"><i class="bi bi-arrow-down-circle"></i> Entradas</h6>
-                    <h5 class="mb-0 text-success">R$ <span th:text="${#numbers.formatDecimal(entradasMes, 0, 'COMMA', 2, 'POINT')}"></span></h5>
-                </div>
-            </div>
-            <div class="col-md-4 col-4">
-                <div class="metric-card py-2 px-3 text-center">
-                    <h6 class="mb-0 text-danger"><i class="bi bi-arrow-up-circle"></i> Despesas</h6>
-                    <h5 class="mb-0 text-danger">R$ <span th:text="${#numbers.formatDecimal(despesasMes, 0, 'COMMA', 2, 'POINT')}"></span></h5>
-                </div>
-            </div>
-            <div class="col-md-4 col-4">
-                <div class="metric-card py-2 px-3 text-center">
-                    <h6 class="mb-0 text-info"><i class="bi bi-pie-chart"></i> Investimentos</h6>
-                    <h5 class="mb-0 text-info">R$ <span th:text="${#numbers.formatDecimal(investMes, 0, 'COMMA', 2, 'POINT')}"></span></h5>
-                </div>
-            </div>
+        <!-- Monthly strip -->
+        <div class="monthly-strip">
+            <span class="monthly-item text-success">
+                <i class="bi bi-arrow-down-circle"></i> Entradas: R$ <span th:text="${#numbers.formatDecimal(entradasMes, 0, 'COMMA', 2, 'POINT')}"></span>
+            </span>
+            <span class="monthly-item text-danger">
+                <i class="bi bi-arrow-up-circle"></i> Despesas: R$ <span th:text="${#numbers.formatDecimal(despesasMes, 0, 'COMMA', 2, 'POINT')}"></span>
+            </span>
+            <span class="monthly-item text-info">
+                <i class="bi bi-pie-chart"></i> Investimentos: R$ <span th:text="${#numbers.formatDecimal(investMes, 0, 'COMMA', 2, 'POINT')}"></span>
+            </span>
         </div>
 
-        <!-- Charts Grid -->
-        <div class="row g-2">
-            <div class="col-md-6">
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-graph-up-arrow"></i> Evolução Diária</h6>
-                        <canvas id="chartDaily"></canvas>
-                    </div>
-                </div>
+        <!-- 2-column chart grid -->
+        <div class="chart-grid">
+            <div class="chart-cell wide">
+                <h6 class="chart-label"><i class="bi bi-graph-up-arrow"></i> Evolução Diária</h6>
+                <canvas id="chartDaily"></canvas>
             </div>
-            <div class="col-md-6">
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-bar-chart"></i> Despesas por Categoria</h6>
-                        <canvas id="chartCategory"></canvas>
-                    </div>
-                </div>
+            <div class="chart-cell wide">
+                <h6 class="chart-label"><i class="bi bi-bar-chart"></i> Despesas por Categoria</h6>
+                <canvas id="chartCategory"></canvas>
             </div>
-            <div class="col-md-4">
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-diagram-3"></i> Fluxo por Conta</h6>
-                        <canvas id="chartFlow"></canvas>
-                    </div>
-                </div>
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-diagram-3"></i> Fluxo por Conta</h6>
+                <canvas id="chartFlow"></canvas>
             </div>
-            <div class="col-md-4">
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-water"></i> Formação do Saldo</h6>
-                        <canvas id="chartWaterfall"></canvas>
-                    </div>
-                </div>
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-water"></i> Formação do Saldo</h6>
+                <canvas id="chartWaterfall"></canvas>
             </div>
-            <div class="col-md-4">
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-diagram-3"></i> Perfil de Consumo</h6>
-                        <canvas id="chartRadar"></canvas>
-                    </div>
-                </div>
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-diagram-3"></i> Perfil de Consumo</h6>
+                <canvas id="chartRadar"></canvas>
             </div>
-        </div>
-        <div class="row g-2 mt-2">
-            <div class="col-12">
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <h6 class="card-title"><i class="bi bi-calendar"></i> Evolução Anual</h6>
-                        <canvas id="chartYearly" style="max-height: 180px;"></canvas>
-                    </div>
-                </div>
+            <div class="chart-cell full">
+                <h6 class="chart-label"><i class="bi bi-calendar"></i> Evolução Anual</h6>
+                <canvas id="chartYearly"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Balance Adjustment Modal -->
+    <!-- Modal -->
     <div class="modal fade" id="ajusteModal" tabindex="-1" role="dialog" aria-modal="true"
          aria-labelledby="ajusteModalLabel" aria-describedby="ajusteModalDesc">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="ajusteModalLabel"><i class="bi bi-sliders"></i> Corrigir Saldo</h5>
+                    <h6 class="modal-title" id="ajusteModalLabel"><i class="bi bi-sliders"></i> Corrigir Saldo</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <form th:action="@{/transactions}" method="post">
@@ -179,13 +135,6 @@
         </div>
     </div>
 
-    <!-- "Ajustar" button floating on the metric card -->
-    <div style="position: fixed; bottom: 1.5rem; left: calc(var(--sidebar-width, 260px) + 1.5rem); z-index: 1020;">
-        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#ajusteModal">
-            <i class="bi bi-sliders"></i> Ajustar Saldo
-        </button>
-    </div>
-
 <script th:inline="javascript">
 const COLORS = [
     '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
@@ -203,10 +152,11 @@ function initCharts() {
                 borderColor: '#1f77b4',
                 backgroundColor: 'rgba(31,119,180,0.1)',
                 fill: true,
-                tension: 0.3
+                tension: 0.3,
+                pointRadius: 2
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
     new Chart(document.getElementById('chartCategory'), {
@@ -220,11 +170,7 @@ function initCharts() {
                 borderRadius: 4
             }]
         },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            plugins: { legend: { display: false } }
-        }
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
     const sankeyLinks = /*[[${sankeyLinks}]]*/ || [];
@@ -238,7 +184,7 @@ function initCharts() {
             labels: flowLabels,
             datasets: [{ data: flowValues, backgroundColor: COLORS }]
         },
-        options: { responsive: true, plugins: { legend: { position: 'right' } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
     });
 
     new Chart(document.getElementById('chartWaterfall'), {
@@ -257,7 +203,7 @@ function initCharts() {
                 borderRadius: 4
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
     const radarLabels = /*[[${categorias}]]*/ [];
@@ -271,10 +217,11 @@ function initCharts() {
                 data: radarValues,
                 backgroundColor: 'rgba(31,119,180,0.2)',
                 borderColor: '#1f77b4',
-                pointBackgroundColor: '#1f77b4'
+                pointBackgroundColor: '#1f77b4',
+                pointRadius: 2
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { ticks: { display: false } } } }
     });
 
     const yearly = /*[[${yearlyExpenses}]]*/ || [];
@@ -300,9 +247,9 @@ function initCharts() {
             }))
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { x: { stacked: true }, y: { stacked: true } }
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { stacked: true }, y: { stacked: true } },
+            plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } }
         }
     });
 }

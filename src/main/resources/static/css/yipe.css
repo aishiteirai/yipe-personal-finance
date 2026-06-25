@@ -142,36 +142,122 @@ h1 { font-size: 1.75rem; }
 h3 { font-size: 1.35rem; }
 h5 { font-size: 1rem; }
 
-/* --- Metric Cards --- */
-.metric-card {
+/* --- KPI Bar (compact dashboard header) --- */
+.kpi-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
   background: var(--yipe-surface);
   border: 1px solid var(--yipe-border);
-  border-radius: var(--yipe-radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--yipe-shadow);
-  transition: border-color var(--yipe-transition);
+  border-radius: var(--yipe-radius);
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.metric-card:hover {
-  border-color: rgba(255,255,255,0.1);
+.kpi-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1rem;
+  min-width: 0;
 }
 
-.metric-card h6 {
+.kpi-item:last-child {
+  margin-left: auto;
+  flex-direction: row;
+}
+
+.kpi-label {
+  font-size: 0.65rem;
   color: var(--yipe-text-secondary);
-  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.kpi-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--yipe-text-primary);
+  white-space: nowrap;
+}
+
+.kpi-sublabel {
+  font-size: 0.65rem;
+  color: var(--yipe-text-secondary);
+  white-space: nowrap;
+}
+
+.kpi-divider {
+  width: 1px;
+  height: 2rem;
+  background: var(--yipe-border);
+  flex-shrink: 0;
+}
+
+.kpi-selects {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.kpi-selects select {
+  background: var(--yipe-bg);
+  border: 1px solid var(--yipe-border);
+  border-radius: 4px;
+  color: var(--yipe-text-primary);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  width: auto;
+}
+
+/* --- Monthly strip --- */
+.monthly-strip {
+  display: flex;
+  gap: 1rem;
+  padding: 0.35rem 0;
   margin-bottom: 0.5rem;
 }
 
-.metric-card h3, .metric-card h4 {
-  margin-bottom: 0;
-  font-weight: 700;
+.monthly-item {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.metric-card .text-success { color: var(--yipe-success) !important; }
-.metric-card .text-danger { color: var(--yipe-danger) !important; }
-.metric-card .text-info { color: var(--yipe-info) !important; }
+/* --- Chart grid --- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.chart-cell {
+  background: var(--yipe-surface);
+  border: 1px solid var(--yipe-border);
+  border-radius: var(--yipe-radius);
+  padding: 0.6rem;
+  height: 220px;
+  position: relative;
+}
+
+.chart-cell.full {
+  grid-column: 1 / -1;
+  height: 200px;
+}
+
+.chart-cell canvas {
+  width: 100% !important;
+  height: calc(100% - 1.2rem) !important;
+}
+
+.chart-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--yipe-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.25rem;
+}
 
 /* --- Data Tables --- */
 .table {
