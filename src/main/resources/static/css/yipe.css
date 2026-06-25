@@ -532,3 +532,35 @@ canvas {
   font-weight: 500;
   border-radius: 4px;
 }
+
+/* --- Chart card compact variant --- */
+.chart-card .card-body {
+  padding: 0.75rem;
+}
+
+.chart-card .card-title {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+/* --- Tighter metric card for compact dashboard --- */
+.metric-card.compact {
+  padding: 0.75rem 1rem;
+}
+
+.metric-card.compact h6 {
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+}
+
+/* --- Form select small variant dark fix --- */
+.form-select-sm {
+  font-size: 0.85rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+/* --- Chart canvas responsive --- */
+canvas {
+  max-height: 260px;
+}
