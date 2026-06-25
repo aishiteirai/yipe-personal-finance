@@ -31,16 +31,17 @@
     </div>
 
     <!-- Balance Adjustment Modal -->
-    <div class="modal fade" id="ajusteModal" tabindex="-1">
+    <div class="modal fade" id="ajusteModal" tabindex="-1" role="dialog" aria-modal="true"
+         aria-labelledby="ajusteModalLabel" aria-describedby="ajusteModalDesc">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-sliders"></i> Corrigir Saldo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="ajusteModalLabel"><i class="bi bi-sliders"></i> Corrigir Saldo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <form th:action="@{/transactions}" method="post">
                     <div class="modal-body">
-                        <p class="text-secondary">Ajuste o saldo. O histórico dos gráficos não será afetado.</p>
+                        <p id="ajusteModalDesc" class="text-secondary">Ajuste o saldo. O histórico dos gráficos não será afetado.</p>
                         <div class="input-group">
                             <span class="input-group-text">R$</span>
                             <input type="number" step="0.01" name="valor" class="form-control" th:value="${saldoGeral}">
@@ -100,20 +101,20 @@
         <h3 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Central de Análises</h3>
     </div>
 
-    <!-- Filters (HTMX: partial page update instead of full reload) -->
+    <!-- Filters (HTMX: partial chart refresh only) -->
     <div class="row g-3 mb-4">
         <div class="col-auto">
             <select name="ano" class="form-select" id="anoSelect"
-                    hx-get="/dashboard" hx-target="#charts-area" hx-trigger="change"
-                    hx-include="#mesSelect">
+                    hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
+                    hx-include="#mesSelect" hx-indicator="#charts-indicator">
                 <option th:each="y : ${availableYears}" th:value="${y}"
                         th:selected="${anoSelecionado == y}" th:text="${y}"></option>
             </select>
         </div>
         <div class="col-auto">
             <select name="mes" class="form-select" id="mesSelect"
-                    hx-get="/dashboard" hx-target="#charts-area" hx-trigger="change"
-                    hx-include="#anoSelect">
+                    hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
+                    hx-include="#anoSelect" hx-indicator="#charts-indicator">
                 <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
                         th:selected="${mesSelecionado == m}"
                         th:text="${mesesPt[m - 1]}"></option>
@@ -121,8 +122,23 @@
         </div>
     </div>
 
+    <!-- Loading indicator -->
+    <div id="charts-indicator" class="htmx-indicator">
+        <div class="row g-3 mb-4">
+            <div class="col-md-4"><div class="skeleton skeleton-chart"></div></div>
+            <div class="col-md-4"><div class="skeleton skeleton-chart"></div></div>
+            <div class="col-md-4"><div class="skeleton skeleton-chart"></div></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
+            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
+            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
+            <div class="col-md-6"><div class="skeleton skeleton-chart"></div></div>
+        </div>
+    </div>
+
     <!-- Monthly Metrics + Charts (replaced by HTMX on filter change) -->
-    <div id="charts-area">
+    <div id="charts-area" th:fragment="chartsArea">
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="metric-card">

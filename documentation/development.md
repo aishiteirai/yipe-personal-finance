@@ -10,7 +10,7 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 |--------|--------|
 | **Sprint 1 — Correções Críticas** | ✅ |
 | **Sprint 2 — Test Coverage** | ✅ |
-| Sprint 3 — Performance + UX | ⏳ Pending |
+| **Sprint 3 — Performance + UX** | ✅ |
 | Sprint 4 — New Features | ⏳ Pending |
 | Sprint 5 — Infrastructure | ⏳ Pending |
 | Sprint 6 — Advanced Features | ⏳ Pending |
@@ -21,12 +21,12 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 
 | Item | Status | Priority |
 |------|--------|----------|
-| Create `/dashboard/charts` HTMX fragment endpoint | ⏳ Pending | High |
-| Add skeleton loading states (`hx-indicator`) to all HTMX replacements | ⏳ Pending | Medium |
-| Fix modal accessibility (`aria-describedby`, focus management) | ⏳ Pending | Medium |
-| Convert Budget form to HTMX partial update | ⏳ Pending | Low |
-| Fix Statement default edit selection UX | ⏳ Pending | Low |
-| Add pause-on-hover to toast notifications | ⏳ Pending | Low |
+| Create `/dashboard/charts` HTMX fragment endpoint | ✅ | High |
+| Add skeleton loading states (`hx-indicator`) to all HTMX replacements | ✅ | Medium |
+| Fix modal accessibility (`aria-describedby`, focus management) | ✅ | Medium |
+| Convert Budget form to HTMX partial update | ✅ | Low |
+| Fix Statement default edit selection UX | ✅ | Low |
+| Add pause-on-hover to toast notifications | ✅ | Low |
 
 ---
 
@@ -189,3 +189,4 @@ Living document. Reflects current priorities, in-progress work, known issues, an
 | 2026-06-23 | Sprint 1: Correções Críticas | 11 issues fixed: findAll @Queries, @Transactional Settings, ImportExportService, MapStruct, yipe.js, lang, BigDecimal refactor |
 | 2026-06-25 | development.md sync — corrected test count, coverage gaps, current sprint | Brought living doc in sync with actual codebase state before Sprint 2 kickoff |
 | 2026-06-25 | Sprint 2 complete: 161 tests (up from 25), 16 test classes across all layers | Covers repositories (5), controllers (7), services (3) + existing YipeApplication |
+| 2026-06-25 | Sprint 3 complete: Performance + UX (6 items) | /dashboard/charts fragment, skeletons, modal a11y, budget HTMX, statement UX, toast pause-on-hover |

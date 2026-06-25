@@ -90,14 +90,69 @@ public class DashboardController {
         var yearlyExpenses = dashboardService.getYearlyExpenses(anoSelecionado);
         model.addAttribute("yearlyExpenses", yearlyExpenses);
 
-        // Available years for selector
-        List<Integer> years = List.of(anoAtual, anoAtual - 1, anoAtual - 2);
-        model.addAttribute("availableYears", years);
+    // Available years for selector
+    List<Integer> years = List.of(anoAtual, anoAtual - 1, anoAtual - 2);
+    model.addAttribute("availableYears", years);
+
+    List<String> mesesPt = List.of("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro");
+    model.addAttribute("mesesPt", mesesPt);
+
+    return "dashboard";
+    }
+
+    @GetMapping("/dashboard/charts")
+    public String chartsFragment(@RequestParam(required = false) Integer ano,
+                                  @RequestParam(required = false) Integer mes,
+                                  Model model) {
+        int anoAtual = LocalDate.now().getYear();
+        int mesAtual = LocalDate.now().getMonthValue();
+        int anoSelecionado = ano != null ? ano : anoAtual;
+        int mesSelecionado = mes != null ? mes : mesAtual;
+
+        model.addAttribute("anoSelecionado", anoSelecionado);
+        model.addAttribute("mesSelecionado", mesSelecionado);
+
+        BigDecimal entradasMes = dashboardService.sumByTypesAndMonth(
+                List.of(TransactionType.INCOME), anoSelecionado, mesSelecionado);
+        BigDecimal despesasMes = dashboardService.sumByTypesAndMonth(
+                List.of(TransactionType.DEBIT, TransactionType.CREDIT, TransactionType.VR),
+                anoSelecionado, mesSelecionado);
+        BigDecimal investMes = dashboardService.sumByTypesAndMonth(
+                List.of(TransactionType.INVESTMENT, TransactionType.RESERVE),
+                anoSelecionado, mesSelecionado);
+
+        model.addAttribute("entradasMes", entradasMes);
+        model.addAttribute("despesasMes", despesasMes);
+        model.addAttribute("investMes", investMes);
+
+        var monthTransacoes = dashboardService.getTransactionsForMonth(anoSelecionado, mesSelecionado);
+        var gastosPorDia = dashboardService.getDailyExpenses(monthTransacoes);
+        model.addAttribute("dias", new ArrayList<>(gastosPorDia.keySet()));
+        model.addAttribute("valoresDiarios", new ArrayList<>(gastosPorDia.values()));
+
+        var gastosPorCategoria = dashboardService.getExpensesByCategory(monthTransacoes);
+        model.addAttribute("categorias", new ArrayList<>(gastosPorCategoria.keySet()));
+        model.addAttribute("valoresCategoria", new ArrayList<>(gastosPorCategoria.values()));
+
+        var sankeyLinks = dashboardService.getSankeyData(monthTransacoes);
+        model.addAttribute("sankeyLinks", sankeyLinks);
+
+        Set<String> allNodes = new LinkedHashSet<>();
+        for (var link : sankeyLinks) {
+            allNodes.add((String) link.get("source"));
+            allNodes.add((String) link.get("target"));
+        }
+        model.addAttribute("sankeyNodes", new ArrayList<>(allNodes));
+
+        var yearlyExpenses = dashboardService.getYearlyExpenses(anoSelecionado);
+        model.addAttribute("yearlyExpenses", yearlyExpenses);
 
         List<String> mesesPt = List.of("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
                 "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro");
         model.addAttribute("mesesPt", mesesPt);
+        model.addAttribute("activePage", "dashboard");
 
-        return "dashboard";
+        return "dashboard :: chartsArea";
     }
 }

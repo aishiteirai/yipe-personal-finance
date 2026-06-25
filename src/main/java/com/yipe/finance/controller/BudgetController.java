@@ -1,6 +1,7 @@
 package com.yipe.finance.controller;
 
 import com.yipe.finance.service.BudgetService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +57,8 @@ public class BudgetController {
             @RequestParam(defaultValue = "20") int pctInvest,
             @RequestParam(required = false) List<String> catNeeds,
             @RequestParam(required = false) List<String> catWants,
-            Model model) {
+            Model model,
+            HttpServletRequest request) {
         model.addAttribute("activePage", "budget");
         model.addAttribute("availableYears", budgetService.getAvailableYears());
         model.addAttribute("selectedYear", year);
@@ -68,7 +70,8 @@ public class BudgetController {
                 pctNeeds, pctWants, pctInvest, catNeeds, catWants));
         model.addAttribute("data", data);
 
-        return "budget";
+        boolean htmx = "true".equals(request.getHeader("HX-Request"));
+        return htmx ? "budget :: budgetResults" : "budget";
     }
 
     public static class BudgetDataWrapper {

@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -28,6 +29,15 @@ class DashboardControllerTest {
 
     @MockitoBean
     DashboardService dashboardService;
+
+    private void mockChartData() {
+        when(dashboardService.sumByTypesAndMonth(anyList(), anyInt(), anyInt())).thenReturn(BigDecimal.ZERO);
+        when(dashboardService.getTransactionsForMonth(anyInt(), anyInt())).thenReturn(List.of());
+        when(dashboardService.getExpensesByCategory(anyList())).thenReturn(Map.of());
+        when(dashboardService.getDailyExpenses(anyList())).thenReturn(Map.of());
+        when(dashboardService.getSankeyData(anyList())).thenReturn(List.of());
+        when(dashboardService.getYearlyExpenses(anyInt())).thenReturn(List.of());
+    }
 
     @Test
     @DisplayName("GET /dashboard should return dashboard view")
@@ -49,5 +59,32 @@ class DashboardControllerTest {
         mockMvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/dashboard"));
+    }
+
+    @Test
+    @DisplayName("GET /dashboard/charts should return chart fragment")
+    void chartsFragment_shouldReturnFragment() throws Exception {
+        mockChartData();
+
+        mockMvc.perform(get("/dashboard/charts"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("dashboard :: chartsArea"))
+                .andExpect(model().attributeExists("activePage", "dias", "valoresDiarios",
+                        "categorias", "valoresCategoria", "sankeyLinks", "sankeyNodes",
+                        "yearlyExpenses", "entradasMes", "despesasMes", "investMes",
+                        "anoSelecionado", "mesSelecionado", "mesesPt"));
+    }
+
+    @Test
+    @DisplayName("GET /dashboard/charts should filter by ano/mes params")
+    void chartsFragment_shouldAcceptParams() throws Exception {
+        mockChartData();
+
+        mockMvc.perform(get("/dashboard/charts")
+                        .param("ano", "2025")
+                        .param("mes", "3"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("anoSelecionado", 2025))
+                .andExpect(model().attribute("mesSelecionado", 3));
     }
 }

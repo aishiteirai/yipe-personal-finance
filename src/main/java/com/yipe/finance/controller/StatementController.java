@@ -62,8 +62,6 @@ public class StatementController {
 
         if (editId != null) {
             service.findById(editId).ifPresent(t -> model.addAttribute("editTransaction", t));
-        } else if (!transactions.isEmpty()) {
-            model.addAttribute("editTransaction", transactions.get(0));
         }
 
         return "statement";

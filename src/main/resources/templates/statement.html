@@ -136,6 +136,7 @@
                 <form th:action="@{/statement}" method="get" class="row g-3 mb-3">
                     <div class="col-md-8">
                         <select name="editId" class="form-select" onchange="this.form.submit()">
+                            <option value="" th:selected="${editTransaction == null}">— Selecione um lançamento —</option>
                             <option th:each="t : ${transactions}"
                                     th:value="${t.id}"
                                     th:text="${'ID: ' + t.id + ' | ' + t.data + ' | ' + t.descricao + ' | R$ ' + t.valor}"
@@ -147,6 +148,9 @@
                     </div>
                 </form>
 
+                <div th:if="${editTransaction == null}" class="text-secondary py-3">
+                    <i class="bi bi-hand-index-thumb"></i> Selecione um lançamento acima para editá-lo.
+                </div>
                 <form th:action="@{/statement/{id}/update(id=${editTransaction.id})}" method="post" th:if="${editTransaction != null}">
                     <div class="row g-3">
                         <div class="col-md-4">

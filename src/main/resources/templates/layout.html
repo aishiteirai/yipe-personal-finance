@@ -85,15 +85,24 @@
         </div>
     </div>
 
-    <!-- Toast container for Alpine.js notifications -->
-    <div class="toast-container" x-data="{ toasts: [] }"
-         @notify.window="toasts.push({ id: Date.now(), ...$event.detail }); setTimeout(() => toasts = toasts.filter(t => t.id !== Date.now()), 5000)">
+    <!-- Toast container for Alpine.js notifications with pause-on-hover -->
+    <div class="toast-container" x-data="{
+        toasts: [],
+        add(detail) {
+            let t = { id: Date.now() + Math.random(), ...detail };
+            t.timer = setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 5000);
+            this.toasts.push(t);
+        },
+        pause(t) { clearTimeout(t.timer); },
+        resume(t) { t.timer = setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 5000); }
+    }" @notify.window="add($event.detail)">
         <template x-for="t in toasts" :key="t.id">
-            <div class="toast show" :class="'toast-' + (t.type || 'info')" role="alert">
+            <div class="toast show" :class="'toast-' + (t.type || 'info')" role="alert"
+                 @mouseenter="pause(t)" @mouseleave="resume(t)">
                 <div class="toast-body d-flex align-items-center gap-2">
                     <i :class="'bi bi-' + (t.icon || 'info-circle') + ' fs-5'"></i>
                     <span x-text="t.message"></span>
-                    <button type="button" class="btn-close ms-auto" @click="toasts = toasts.filter(x => x.id !== t.id)"></button>
+                    <button type="button" class="btn-close ms-auto" @click="toasts = toasts.filter(x => x.id !== t.id); clearTimeout(t.timer)"></button>
                 </div>
             </div>
         </template>
