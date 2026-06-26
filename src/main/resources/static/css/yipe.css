@@ -142,121 +142,118 @@ h1 { font-size: 1.75rem; }
 h3 { font-size: 1.35rem; }
 h5 { font-size: 1rem; }
 
-/* --- KPI Bar (compact dashboard header) --- */
-.kpi-bar {
-  display: flex;
-  align-items: center;
-  gap: 0;
+/* --- Dashboard Metric Cards --- */
+.dash-card {
   background: var(--yipe-surface);
   border: 1px solid var(--yipe-border);
-  border-radius: var(--yipe-radius);
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.75rem;
+  border-radius: var(--yipe-radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--yipe-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--yipe-transition), transform var(--yipe-transition);
 }
 
-.kpi-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 1rem;
-  min-width: 0;
+.dash-card:hover {
+  border-color: var(--yipe-text-secondary);
+  transform: translateY(-1px);
 }
 
-.kpi-item:last-child {
-  margin-left: auto;
-  flex-direction: row;
+.dash-card-icon {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 1.5rem;
+  color: var(--yipe-text-secondary);
+  opacity: 0.3;
 }
 
-.kpi-label {
-  font-size: 0.65rem;
+.dash-card-label {
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--yipe-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.35rem;
 }
 
-.kpi-value {
-  font-size: 1.1rem;
+.dash-card-value {
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--yipe-text-primary);
-  white-space: nowrap;
+  line-height: 1.2;
+  margin-bottom: 0.2rem;
 }
 
-.kpi-sublabel {
-  font-size: 0.65rem;
+.dash-card-sublabel {
+  font-size: 0.7rem;
   color: var(--yipe-text-secondary);
-  white-space: nowrap;
-}
-
-.kpi-divider {
-  width: 1px;
-  height: 2rem;
-  background: var(--yipe-border);
-  flex-shrink: 0;
-}
-
-.kpi-selects {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.kpi-selects select {
-  background: var(--yipe-bg);
-  border: 1px solid var(--yipe-border);
-  border-radius: 4px;
-  color: var(--yipe-text-primary);
-  font-size: 0.75rem;
-  padding: 0.15rem 0.4rem;
-  width: auto;
-}
-
-/* --- Monthly strip --- */
-.monthly-strip {
-  display: flex;
-  gap: 1rem;
-  padding: 0.35rem 0;
-  margin-bottom: 0.5rem;
-}
-
-.monthly-item {
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
 }
 
 /* --- Chart grid --- */
 .chart-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .chart-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .chart-cell {
   background: var(--yipe-surface);
   border: 1px solid var(--yipe-border);
-  border-radius: var(--yipe-radius);
-  padding: 0.6rem;
-  height: 220px;
+  border-radius: var(--yipe-radius-lg);
+  padding: 0.75rem;
+  height: 300px;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-cell.full {
   grid-column: 1 / -1;
-  height: 200px;
+  height: 300px;
 }
 
 .chart-cell canvas {
+  flex: 1;
   width: 100% !important;
-  height: calc(100% - 1.2rem) !important;
+  min-height: 0;
 }
 
 .chart-label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--yipe-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* --- Chart empty state --- */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--yipe-text-secondary);
+  opacity: 0.6;
+  gap: 0.5rem;
+}
+
+.chart-empty i {
+  font-size: 2rem;
+}
+
+.chart-empty span {
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 /* --- Data Tables --- */
@@ -568,16 +565,6 @@ h5 { font-size: 1rem; }
   border-radius: 6px;
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.skeleton-chart {
-  height: 320px;
-  width: 100%;
-}
-
 .skeleton-row {
   height: 40px;
   width: 100%;
@@ -600,11 +587,6 @@ a:hover {
   color: var(--yipe-accent-hover);
 }
 
-/* --- Chart canvases --- */
-canvas {
-  max-height: 320px;
-}
-
 /* --- Utility: Focus within card (form-card) --- */
 .form-card {
   background: var(--yipe-surface);
@@ -619,26 +601,6 @@ canvas {
   border-radius: 4px;
 }
 
-/* --- Chart card compact variant --- */
-.chart-card .card-body {
-  padding: 0.75rem;
-}
-
-.chart-card .card-title {
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-}
-
-/* --- Tighter metric card for compact dashboard --- */
-.metric-card.compact {
-  padding: 0.75rem 1rem;
-}
-
-.metric-card.compact h6 {
-  font-size: 0.7rem;
-  margin-bottom: 0.25rem;
-}
-
 /* --- Form select small variant dark fix --- */
 .form-select-sm {
   font-size: 0.85rem;
@@ -646,7 +608,22 @@ canvas {
   padding-bottom: 0.25rem;
 }
 
-/* --- Chart canvas responsive --- */
-canvas {
-  max-height: 260px;
+/* --- Skeleton chart in grid context --- */
+.skeleton-chart {
+  height: 320px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--yipe-surface) 25%,
+    var(--yipe-surface-hover) 50%,
+    var(--yipe-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--yipe-radius-lg);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

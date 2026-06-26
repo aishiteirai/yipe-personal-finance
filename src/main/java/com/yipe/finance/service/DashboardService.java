@@ -123,4 +123,18 @@ public class DashboardService {
                         TransactionType.INCOME, TransactionType.INVESTMENT, TransactionType.RESERVE),
                 List.of(TransactionType.DEBIT, TransactionType.CREDIT, TransactionType.VR));
     }
+
+    public Map<String, List<BigDecimal>> getYearlyChartData(int year) {
+        List<Transaction> transactions = getYearlyExpenses(year);
+        Map<String, List<BigDecimal>> result = new LinkedHashMap<>();
+        for (Transaction t : transactions) {
+            String cat = t.getCategoria();
+            if (cat == null) continue;
+            result.putIfAbsent(cat, new ArrayList<>(Collections.nCopies(12, BigDecimal.ZERO)));
+            int month = t.getData().getMonthValue() - 1;
+            List<BigDecimal> values = result.get(cat);
+            values.set(month, values.get(month).add(t.getValor()));
+        }
+        return result;
+    }
 }

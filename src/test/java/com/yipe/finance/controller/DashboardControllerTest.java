@@ -36,7 +36,7 @@ class DashboardControllerTest {
         when(dashboardService.getExpensesByCategory(anyList())).thenReturn(Map.of());
         when(dashboardService.getDailyExpenses(anyList())).thenReturn(Map.of());
         when(dashboardService.getSankeyData(anyList())).thenReturn(List.of());
-        when(dashboardService.getYearlyExpenses(anyInt())).thenReturn(List.of());
+        when(dashboardService.getYearlyChartData(anyInt())).thenReturn(Map.of());
     }
 
     @Test
@@ -46,6 +46,7 @@ class DashboardControllerTest {
         when(dashboardService.sumByTypesAndMonth(anyList(), anyInt(), anyInt())).thenReturn(BigDecimal.ZERO);
         when(dashboardService.getTransactionsForMonth(anyInt(), anyInt())).thenReturn(List.of());
         when(dashboardService.getTodayTransactions()).thenReturn(List.of());
+        when(dashboardService.getYearlyChartData(anyInt())).thenReturn(Map.of());
 
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk())
@@ -71,7 +72,7 @@ class DashboardControllerTest {
                 .andExpect(view().name("dashboard :: chartsArea"))
                 .andExpect(model().attributeExists("activePage", "dias", "valoresDiarios",
                         "categorias", "valoresCategoria", "sankeyLinks", "sankeyNodes",
-                        "yearlyExpenses", "entradasMes", "despesasMes", "investMes",
+                        "yearlyChartData", "entradasMes", "despesasMes", "investMes",
                         "anoSelecionado", "mesSelecionado", "mesesPt"));
     }
 

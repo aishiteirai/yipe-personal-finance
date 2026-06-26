@@ -5,143 +5,201 @@
 <body>
 <div layout:fragment="content">
 
-    <!-- KPI Bar -->
-    <div class="kpi-bar">
-        <div class="kpi-item">
-            <span class="kpi-label">Saldo Geral</span>
-            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(saldoGeral, 0, 'COMMA', 2, 'POINT')}|"></span>
-        </div>
-        <div class="kpi-divider"></div>
-        <div class="kpi-item">
-            <span class="kpi-label">Investido</span>
-            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(totalInvestido, 0, 'COMMA', 2, 'POINT')}|"></span>
-        </div>
-        <div class="kpi-divider"></div>
-        <div class="kpi-item">
-            <span class="kpi-label">Gasto Hoje</span>
-            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(gastoDebHoje, 0, 'COMMA', 2, 'POINT')}|"></span>
-            <span class="kpi-sublabel">Créd: R$ <span th:text="${#numbers.formatDecimal(gastoCredHoje, 0, 'COMMA', 2, 'POINT')}"></span></span>
-        </div>
-        <div class="kpi-divider"></div>
-        <div class="kpi-item">
-            <span class="kpi-label">Saldo Hoje</span>
-            <span class="kpi-value" th:text="|R$ ${#numbers.formatDecimal(saldoHoje, 0, 'COMMA', 2, 'POINT')}|"></span>
-        </div>
-        <div class="kpi-divider"></div>
-        <div class="kpi-item">
-            <span class="kpi-label">Período</span>
-            <div class="kpi-selects">
-                <select name="ano" id="anoSelect"
-                        hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
-                        hx-include="#mesSelect" hx-indicator="#charts-indicator">
-                    <option th:each="y : ${availableYears}" th:value="${y}"
-                            th:selected="${anoSelecionado == y}" th:text="${y}"></option>
-                </select>
-                <select name="mes" id="mesSelect"
-                        hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
-                        hx-include="#anoSelect" hx-indicator="#charts-indicator">
-                    <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
-                            th:selected="${mesSelecionado == m}"
-                            th:text="${mesesPt[m - 1]}"></option>
-                </select>
-            </div>
-        </div>
-        <div class="kpi-divider"></div>
-        <div class="kpi-item">
-            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#ajusteModal">
-                <i class="bi bi-sliders"></i> Ajustar
-            </button>
+    <!-- ========== Header: Title + Period Selector ========== -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+        <h1 class="mb-0 fs-3"><i class="bi bi-bar-chart-fill me-1"></i> Dashboard</h1>
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-secondary small d-none d-sm-inline" th:text="${mesesPt[mesSelecionado - 1] + ' de ' + anoSelecionado}"></span>
+            <select name="ano" id="anoSelect"
+                    class="form-select form-select-sm" style="width: auto; min-width: 80px;"
+                    hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
+                    hx-include="#mesSelect" hx-indicator="#charts-area">
+                <option th:each="y : ${availableYears}" th:value="${y}"
+                        th:selected="${anoSelecionado == y}" th:text="${y}"></option>
+            </select>
+            <select name="mes" id="mesSelect"
+                    class="form-select form-select-sm" style="width: auto; min-width: 120px;"
+                    hx-get="/dashboard/charts" hx-target="#charts-area" hx-trigger="change"
+                    hx-include="#anoSelect" hx-indicator="#charts-area">
+                <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
+                        th:selected="${mesSelecionado == m}"
+                        th:text="${mesesPt[m - 1]}"></option>
+            </select>
         </div>
     </div>
 
-    <!-- Loading -->
-    <div id="charts-indicator" class="htmx-indicator text-center py-3">
-        <div class="spinner-border spinner-border-sm text-secondary me-2" role="status"></div>
-        <span class="text-secondary small">Carregando...</span>
-    </div>
-
-    <!-- Charts -->
-    <div id="charts-area" th:fragment="chartsArea">
-
-        <!-- Monthly strip -->
-        <div class="monthly-strip">
-            <span class="monthly-item text-success">
-                <i class="bi bi-arrow-down-circle"></i> Entradas: R$ <span th:text="${#numbers.formatDecimal(entradasMes, 0, 'COMMA', 2, 'POINT')}"></span>
-            </span>
-            <span class="monthly-item text-danger">
-                <i class="bi bi-arrow-up-circle"></i> Despesas: R$ <span th:text="${#numbers.formatDecimal(despesasMes, 0, 'COMMA', 2, 'POINT')}"></span>
-            </span>
-            <span class="monthly-item text-info">
-                <i class="bi bi-pie-chart"></i> Investimentos: R$ <span th:text="${#numbers.formatDecimal(investMes, 0, 'COMMA', 2, 'POINT')}"></span>
-            </span>
-        </div>
-
-        <!-- 2-column chart grid -->
-        <div class="chart-grid">
-            <div class="chart-cell wide">
-                <h6 class="chart-label"><i class="bi bi-graph-up-arrow"></i> Evolução Diária</h6>
-                <canvas id="chartDaily"></canvas>
-            </div>
-            <div class="chart-cell wide">
-                <h6 class="chart-label"><i class="bi bi-bar-chart"></i> Despesas por Categoria</h6>
-                <canvas id="chartCategory"></canvas>
-            </div>
-            <div class="chart-cell">
-                <h6 class="chart-label"><i class="bi bi-diagram-3"></i> Fluxo por Conta</h6>
-                <canvas id="chartFlow"></canvas>
-            </div>
-            <div class="chart-cell">
-                <h6 class="chart-label"><i class="bi bi-water"></i> Formação do Saldo</h6>
-                <canvas id="chartWaterfall"></canvas>
-            </div>
-            <div class="chart-cell">
-                <h6 class="chart-label"><i class="bi bi-diagram-3"></i> Perfil de Consumo</h6>
-                <canvas id="chartRadar"></canvas>
-            </div>
-            <div class="chart-cell full">
-                <h6 class="chart-label"><i class="bi bi-calendar"></i> Evolução Anual</h6>
-                <canvas id="chartYearly"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="ajusteModal" tabindex="-1" role="dialog" aria-modal="true"
-         aria-labelledby="ajusteModalLabel" aria-describedby="ajusteModalDesc">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title" id="ajusteModalLabel"><i class="bi bi-sliders"></i> Corrigir Saldo</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+    <!-- ========== Metric Cards Row ========== -->
+    <div class="row g-3 mb-3">
+        <!-- Card 1: Saldo Geral (inline editable) -->
+        <div class="col-sm-6 col-md-3">
+            <div class="dash-card" x-data="{ editing: false }">
+                <div class="dash-card-icon"><i class="bi bi-wallet2"></i></div>
+                <div class="dash-card-label">
+                    Saldo Geral
+                    <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip"
+                       title="Entradas - Despesas - Investimentos. Inclui ajustes manuais."></i>
                 </div>
-                <form th:action="@{/transactions}" method="post">
-                    <div class="modal-body">
-                        <p id="ajusteModalDesc" class="text-secondary small">Ajuste o saldo. O histórico dos gráficos não será afetado.</p>
-                        <div class="input-group">
+                <template x-if="!editing">
+                    <div class="dash-card-value" @click="editing = true" role="button" tabindex="0"
+                         th:classappend="${saldoGeral >= 0} ? 'text-success' : 'text-danger'"
+                         th:text="|R$ ${#numbers.formatDecimal(saldoGeral, 0, 'COMMA', 2, 'POINT')}|">
+                    </div>
+                </template>
+                <template x-if="editing">
+                    <form th:action="@{/transactions}" method="post" class="mt-1">
+                        <div class="input-group input-group-sm">
                             <span class="input-group-text">R$</span>
-                            <input type="number" step="0.01" name="valor" class="form-control" th:value="${saldoGeral}">
+                            <input type="number" step="0.01" name="valor" class="form-control"
+                                   th:value="${saldoGeral}" autofocus>
+                            <button type="submit" class="btn btn-primary btn-sm" aria-label="Salvar"><i class="bi bi-check-lg"></i></button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" @click="editing = false" aria-label="Cancelar"><i class="bi bi-x-lg"></i></button>
                         </div>
                         <input type="hidden" name="tipo" th:value="${saldoGeral >= 0} ? 'ADJUSTMENT_INCOME' : 'ADJUSTMENT_EXPENSE'">
                         <input type="hidden" name="data" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
                         <input type="hidden" name="descricao" value="Correção Manual de Saldo">
                         <input type="hidden" name="conta" value="Geral">
                         <input type="hidden" name="categoria" value="Ajuste">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg"></i> Aplicar</button>
-                    </div>
-                </form>
+                    </form>
+                </template>
+                <div class="dash-card-sublabel" x-show="!editing">
+                    Investido: R$ <span th:text="${#numbers.formatDecimal(totalInvestido, 0, 'COMMA', 2, 'POINT')}"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Card 2: Gasto Hoje -->
+        <div class="col-sm-6 col-md-3">
+            <div class="dash-card">
+                <div class="dash-card-icon"><i class="bi bi-clock"></i></div>
+                <div class="dash-card-label">
+                    Gasto Hoje
+                    <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip"
+                       title="Total de gastos em débito e VR no dia de hoje. Crédito incluso separadamente."></i>
+                </div>
+                <div class="dash-card-value" th:text="|R$ ${#numbers.formatDecimal(gastoDebHoje, 0, 'COMMA', 2, 'POINT')}|"></div>
+                <div class="dash-card-sublabel">
+                    Crédito: R$ <span th:text="${#numbers.formatDecimal(gastoCredHoje, 0, 'COMMA', 2, 'POINT')}"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Card 3: Receitas do Mês -->
+        <div class="col-sm-6 col-md-3">
+            <div class="dash-card">
+                <div class="dash-card-icon"><i class="bi bi-arrow-down-circle text-success"></i></div>
+                <div class="dash-card-label">
+                    Receitas do Mês
+                    <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip"
+                       title="Total de receitas (salário, rendimentos) no período selecionado."></i>
+                </div>
+                <div class="dash-card-value text-success" th:text="|R$ ${#numbers.formatDecimal(entradasMes, 0, 'COMMA', 2, 'POINT')}|"></div>
+                <div class="dash-card-sublabel" th:text="${mesesPt[mesSelecionado - 1]}"></div>
+            </div>
+        </div>
+        <!-- Card 4: Despesas do Mês -->
+        <div class="col-sm-6 col-md-3">
+            <div class="dash-card">
+                <div class="dash-card-icon"><i class="bi bi-arrow-up-circle text-danger"></i></div>
+                <div class="dash-card-label">
+                    Despesas do Mês
+                    <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip"
+                       title="Total de despesas (débito, crédito, VR) no período selecionado."></i>
+                </div>
+                <div class="dash-card-value text-danger" th:text="|R$ ${#numbers.formatDecimal(despesasMes, 0, 'COMMA', 2, 'POINT')}|"></div>
+                <div class="dash-card-sublabel">
+                    <span th:if="${entradasMes > 0}" th:text="${#numbers.formatDecimal(entradasMes.subtract(despesasMes).subtract(investMes), 0, 'COMMA', 2, 'POINT')} + ' disponível'"
+                          th:classappend="${entradasMes.subtract(despesasMes).subtract(investMes) >= 0} ? 'text-success' : 'text-danger'"></span>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- ========== Charts Area (swapped by HTMX) ========== -->
+    <div id="charts-area" th:fragment="chartsArea" class="position-relative">
+
+        <!-- Loading skeleton overlays the charts area during HTMX swaps -->
+        <div class="htmx-indicator position-absolute top-0 start-0 w-100">
+            <div class="row g-3">
+                <div class="col-md-6"><div class="skeleton-chart"></div></div>
+                <div class="col-md-6"><div class="skeleton-chart"></div></div>
+                <div class="col-md-6"><div class="skeleton-chart"></div></div>
+                <div class="col-md-6"><div class="skeleton-chart"></div></div>
+                <div class="col-12"><div class="skeleton-chart"></div></div>
+            </div>
+        </div>
+
+        <h5 class="mb-3"><i class="bi bi-graph-up me-1"></i> Gráficos do Período</h5>
+
+        <div class="chart-grid">
+            <!-- Chart 1: Daily Evolution -->
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-graph-up-arrow"></i> Evolução Diária</h6>
+                <div th:if="${#lists.size(dias) == 0}" class="chart-empty">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Sem despesas neste período</span>
+                </div>
+                <canvas id="chartDaily" th:classappend="${#lists.size(dias) == 0} ? 'd-none' : ''"></canvas>
+            </div>
+            <!-- Chart 2: Expenses by Category -->
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-bar-chart"></i> Despesas por Categoria</h6>
+                <div th:if="${#lists.size(categorias) == 0}" class="chart-empty">
+                    <i class="bi bi-tags"></i>
+                    <span>Nenhuma despesa neste período</span>
+                </div>
+                <canvas id="chartCategory" th:classappend="${#lists.size(categorias) == 0} ? 'd-none' : ''"></canvas>
+            </div>
+            <!-- Chart 3: Money Flow -->
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-diagram-3"></i> Fluxo por Conta</h6>
+                <div th:if="${#lists.size(sankeyLinks) == 0}" class="chart-empty">
+                    <i class="bi bi-credit-card"></i>
+                    <span>Sem transações no período</span>
+                </div>
+                <canvas id="chartFlow" th:classappend="${#lists.size(sankeyLinks) == 0} ? 'd-none' : ''"></canvas>
+            </div>
+            <!-- Chart 4: Waterfall -->
+            <div class="chart-cell">
+                <h6 class="chart-label"><i class="bi bi-water"></i> Formação do Saldo</h6>
+                <div th:if="${entradasMes <= 0 and despesasMes <= 0 and investMes <= 0}" class="chart-empty">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Nenhum movimento no período</span>
+                </div>
+                <canvas id="chartWaterfall" th:classappend="${entradasMes <= 0 and despesasMes <= 0 and investMes <= 0} ? 'd-none' : ''"></canvas>
+            </div>
+            <!-- Chart 5: Yearly (full width) -->
+            <div class="chart-cell full">
+                <h6 class="chart-label"><i class="bi bi-calendar"></i> Evolução Anual</h6>
+                <div th:if="${#maps.size(yearlyChartData) == 0}" class="chart-empty">
+                    <i class="bi bi-calendar2-range"></i>
+                    <span>Sem dados para <span th:text="${anoSelecionado}"></span></span>
+                </div>
+                <canvas id="chartYearly" th:classappend="${#maps.size(yearlyChartData) == 0} ? 'd-none' : ''"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== Quick Actions ========== -->
+    <div class="d-flex flex-wrap gap-2 mt-3 mb-4">
+        <a th:href="@{/transactions}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-plus-circle"></i> Novo Lançamento
+        </a>
+        <a th:href="@{/statement}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-receipt"></i> Ver Extrato
+        </a>
+        <a th:href="@{/budget}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-bullseye"></i> Planejamento
+        </a>
+    </div>
+
 <script th:inline="javascript">
 const COLORS = [
-    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+    '#58A6FF', '#3FB950', '#F85149', '#D29922', '#79C0FF',
+    '#BC8CFF', '#FF7B72', '#7EE787', '#F0883E', '#A5D6FF'
 ];
 
+const mesesAno = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
 function initCharts() {
+    // Chart 1: Daily Evolution (line)
     new Chart(document.getElementById('chartDaily'), {
         type: 'line',
         data: {
@@ -149,8 +207,8 @@ function initCharts() {
             datasets: [{
                 label: 'Gastos (R$)',
                 data: /*[[${valoresDiarios}]]*/ [],
-                borderColor: '#1f77b4',
-                backgroundColor: 'rgba(31,119,180,0.1)',
+                borderColor: '#58A6FF',
+                backgroundColor: 'rgba(88,166,255,0.1)',
                 fill: true,
                 tension: 0.3,
                 pointRadius: 2
@@ -159,6 +217,7 @@ function initCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
+    // Chart 2: Expenses by Category (horizontal bar)
     new Chart(document.getElementById('chartCategory'), {
         type: 'bar',
         data: {
@@ -173,6 +232,7 @@ function initCharts() {
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
+    // Chart 3: Money Flow (doughnut)
     const sankeyLinks = /*[[${sankeyLinks}]]*/ || [];
     const flowLabels = [...new Set(sankeyLinks.map(l => l.source))];
     const flowValues = flowLabels.map(src =>
@@ -187,6 +247,7 @@ function initCharts() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
     });
 
+    // Chart 4: Waterfall (balance formation)
     new Chart(document.getElementById('chartWaterfall'), {
         type: 'bar',
         data: {
@@ -199,49 +260,23 @@ function initCharts() {
                     -/*[[${investMes}]]*/,
                     /*[[${entradasMes - despesasMes - investMes}]]*/
                 ],
-                backgroundColor: ['#2ca02c', '#d62728', '#9467bd', '#1f77b4'],
+                backgroundColor: ['#3FB950', '#F85149', '#BC8CFF', '#58A6FF'],
                 borderRadius: 4
             }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    const radarLabels = /*[[${categorias}]]*/ [];
-    const radarValues = /*[[${valoresCategoria}]]*/ [];
-    new Chart(document.getElementById('chartRadar'), {
-        type: 'radar',
-        data: {
-            labels: radarLabels,
-            datasets: [{
-                label: 'Gastos (R$)',
-                data: radarValues,
-                backgroundColor: 'rgba(31,119,180,0.2)',
-                borderColor: '#1f77b4',
-                pointBackgroundColor: '#1f77b4',
-                pointRadius: 2
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { ticks: { display: false } } } }
-    });
-
-    const yearly = /*[[${yearlyExpenses}]]*/ || [];
-    const catMap = {};
-    const mesesAno = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-    yearly.forEach(t => {
-        const parts = t.data.split('-');
-        const mes = mesesAno[parseInt(parts[1]) - 1];
-        if (!catMap[t.categoria]) catMap[t.categoria] = {};
-        if (!catMap[t.categoria][mes]) catMap[t.categoria][mes] = 0;
-        catMap[t.categoria][mes] += t.valor;
-    });
-    const cats = Object.keys(catMap);
+    // Chart 5: Yearly Evolution (stacked bar, pre-aggregated server-side)
+    const yearlyData = /*[[${yearlyChartData}]]*/ || {};
+    const cats = Object.keys(yearlyData);
     new Chart(document.getElementById('chartYearly'), {
         type: 'bar',
         data: {
             labels: mesesAno,
             datasets: cats.map((cat, i) => ({
                 label: cat,
-                data: mesesAno.map(m => catMap[cat][m] || 0),
+                data: yearlyData[cat],
                 backgroundColor: COLORS[i % COLORS.length],
                 borderRadius: 2
             }))
@@ -254,12 +289,17 @@ function initCharts() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', initCharts);
+document.addEventListener('DOMContentLoaded', function() {
+    // Init Bootstrap tooltips
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+    initCharts();
+});
 document.addEventListener('htmx:afterSwap', function() {
     document.querySelectorAll('canvas').forEach(canvas => {
         const chart = Chart.getChart(canvas);
         if (chart) chart.destroy();
     });
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
     initCharts();
 });
 </script>

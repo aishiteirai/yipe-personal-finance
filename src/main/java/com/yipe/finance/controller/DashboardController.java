@@ -86,9 +86,9 @@ public class DashboardController {
         }
         model.addAttribute("sankeyNodes", new ArrayList<>(allNodes));
 
-        // --- Chart: Yearly stacked bar ---
-        var yearlyExpenses = dashboardService.getYearlyExpenses(anoSelecionado);
-        model.addAttribute("yearlyExpenses", yearlyExpenses);
+        // --- Chart: Yearly stacked bar (pre-aggregated server-side) ---
+        var yearlyChartData = dashboardService.getYearlyChartData(anoSelecionado);
+        model.addAttribute("yearlyChartData", yearlyChartData);
 
     // Available years for selector
     List<Integer> years = List.of(anoAtual, anoAtual - 1, anoAtual - 2);
@@ -145,8 +145,8 @@ public class DashboardController {
         }
         model.addAttribute("sankeyNodes", new ArrayList<>(allNodes));
 
-        var yearlyExpenses = dashboardService.getYearlyExpenses(anoSelecionado);
-        model.addAttribute("yearlyExpenses", yearlyExpenses);
+        var yearlyChartData = dashboardService.getYearlyChartData(anoSelecionado);
+        model.addAttribute("yearlyChartData", yearlyChartData);
 
         List<String> mesesPt = List.of("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
                 "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro");
