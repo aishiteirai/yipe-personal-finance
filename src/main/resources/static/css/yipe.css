@@ -42,7 +42,13 @@ body {
 #page-content-wrapper {
   flex: 1;
   overflow-x: hidden;
-  margin-left: var(--sidebar-width);
+  padding-left: 2.75rem;
+}
+
+@media (min-width: 768px) {
+  #page-content-wrapper {
+    padding-left: 3.25rem;
+  }
 }
 
 /* --- Sidebar --- */
@@ -63,12 +69,6 @@ body {
   transform: translateX(0);
 }
 
-@media (min-width: 768px) {
-  .sidebar {
-    transform: translateX(0);
-  }
-}
-
 .sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -77,12 +77,22 @@ body {
 }
 
 .sidebar-heading {
+  display: flex;
+  align-items: center;
   padding: 1.25rem;
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--yipe-accent);
-  text-align: center;
   letter-spacing: 0.5px;
+}
+
+.sidebar-close {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.sidebar-close:hover {
+  color: var(--yipe-text-primary);
 }
 
 .sidebar-heading i {

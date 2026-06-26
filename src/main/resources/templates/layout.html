@@ -16,15 +16,16 @@
 </head>
 <body>
     <div class="d-flex" id="wrapper" x-data="{ sidebarOpen: false }">
-        <!-- Mobile toggle -->
-        <button class="btn btn-link d-md-none sidebar-toggle"
+        <!-- Sidebar toggle -->
+        <button class="btn btn-link sidebar-toggle"
+                x-show="!sidebarOpen"
                 @click="sidebarOpen = !sidebarOpen"
                 aria-label="Toggle sidebar">
-            <i class="bi bi-list"></i>
+            <i class="bi-list"></i>
         </button>
 
-        <!-- Sidebar overlay (mobile) -->
-        <div class="sidebar-overlay d-md-none"
+        <!-- Sidebar overlay -->
+        <div class="sidebar-overlay"
              x-show="sidebarOpen"
              @click="sidebarOpen = false"
              x-transition.opacity></div>
@@ -35,6 +36,10 @@
              id="sidebar-wrapper">
             <div class="sidebar-heading">
                 <i class="bi bi-lightning-fill"></i> YIPE
+                <button class="btn btn-sm p-0 ms-auto border-0 text-secondary sidebar-close"
+                        @click="sidebarOpen = false" aria-label="Close sidebar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <nav class="list-group list-group-flush">
                 <a th:classappend="${activePage == 'dashboard'} ? 'active' : ''"
